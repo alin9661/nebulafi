@@ -1,0 +1,54 @@
+import "./globals.css";
+
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { WalletProvider } from "@/components/WalletProvider";
+import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
+import { Inter as FontSans } from "next/font/google";
+import { PropsWithChildren } from "react";
+import { QueryProvider } from "@/components/QueryProvider";
+import { LayoutContent } from "@/components/LayoutContent";
+
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+export const metadata: Metadata = {
+  title: "Aptos Full Stack Demo",
+  description: "An demo of a full stack app on Aptos",
+};
+
+const RootLayout = ({ children }: PropsWithChildren) => {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          "flex justify-center min-h-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <WalletProvider>
+              <main className="flex flex-col w-full">
+                <LayoutContent>
+                  {children}
+                </LayoutContent>
+                <Toaster />
+              </main>
+            </WalletProvider>
+          </QueryProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+};
+
+export default RootLayout;
