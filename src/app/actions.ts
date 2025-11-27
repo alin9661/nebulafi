@@ -3,9 +3,7 @@
 import { getLastSuccessVersion } from "@/db/getLastSuccessVersion";
 import { GetMessageProps, getMessage } from "@/db/getMessage";
 import { GetMessagesProps, getMessages } from "@/db/getMessages";
-import { getUserStats, GetUserStatsProps } from "@/db/getUserStats";
 import { Message } from "@/lib/type/message";
-import { UserStat } from "@/lib/type/user_stats";
 
 export const getMessagesOnServer = async ({
   page,
@@ -29,16 +27,4 @@ export const getMessageOnServer = async ({
 
 export const getLastVersionOnServer = async (): Promise<number> => {
   return getLastSuccessVersion();
-};
-
-export const getUserStatsOnServer = async ({
-  page,
-  limit,
-  sortedBy,
-  order,
-}: GetUserStatsProps): Promise<{
-  userStats: UserStat[];
-  total: number;
-}> => {
-  return getUserStats({ page, limit, sortedBy, order });
 };

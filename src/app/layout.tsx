@@ -9,6 +9,7 @@ import { Inter as FontSans } from "next/font/google";
 import { PropsWithChildren } from "react";
 import { QueryProvider } from "@/components/QueryProvider";
 import { LayoutContent } from "@/components/LayoutContent";
+import { WrongNetworkAlert } from "@/components/WrongNetworkAlert";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -38,6 +39,7 @@ const RootLayout = ({ children }: PropsWithChildren) => {
           <QueryProvider>
             <WalletProvider>
               <main className="flex flex-col w-full">
+                <WrongNetworkAlert />
                 <LayoutContent>
                   {children}
                 </LayoutContent>
