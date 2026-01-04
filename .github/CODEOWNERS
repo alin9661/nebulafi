@@ -1,0 +1,20 @@
+# CODEOWNERS - Define code ownership for automatic PR review requests
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Default owners for everything in the repo
+* @alin9661
+
+# Frontend (Next.js)
+/src/ @alin9661
+
+# Smart Contracts (Move)
+/contract/ @alin9661
+
+# Indexer (Rust)
+/indexer/ @alin9661
+
+# CI/CD and GitHub configuration
+/.github/ @alin9661
+
+# Documentation
+*.md @alin9661

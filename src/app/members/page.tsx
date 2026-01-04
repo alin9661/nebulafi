@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Search, Mail, MoreHorizontal } from 'lucide-react';
+import { InviteModal } from '@/components/modals/InviteModal';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Member {
   id: string;
@@ -26,6 +28,21 @@ const initialMembers: Member[] = [
 export default function MembersPage() {
   const [members] = useState<Member[]>(initialMembers);
   const [memberSearch, setMemberSearch] = useState('');
+  const { toast } = useToast();
+
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteFormData, setInviteFormData] = useState({
+    recipient: '',
+    role: 'Member',
+    message: '',
+  });
+
+  const handleInviteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowInviteModal(false);
+    toast({ title: "Invite Sent", description: `Invitation sent to ${inviteFormData.recipient}.` });
+    setInviteFormData({ recipient: '', role: 'Member', message: '' });
+  };
 
   const filteredMembers = members.filter(m =>
     m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
@@ -51,6 +68,7 @@ export default function MembersPage() {
             />
           </div>
           <button
+            onClick={() => setShowInviteModal(true)}
             className="px-4 py-2 bg-white text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2 hover:bg-gray-200 transition-colors"
           >
             <Mail className="w-3 h-3" />
@@ -114,6 +132,14 @@ export default function MembersPage() {
           </table>
         </div>
       </div>
+
+      <InviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        formData={inviteFormData}
+        onFormChange={setInviteFormData}
+        onSubmit={handleInviteSubmit}
+      />
     </div>
   );
 }

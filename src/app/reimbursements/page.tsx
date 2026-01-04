@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Plus, Clock, CheckCircle, XCircle, PenTool, MoreHorizontal } from 'lucide-react';
+import { ReimbursementModal } from '@/components/modals/ReimbursementModal';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Transaction {
   id: string;
@@ -28,6 +30,22 @@ const initialReimbursements: Transaction[] = [
 
 export default function ReimbursementsPage() {
   const [reimbursements, setReimbursements] = useState<Transaction[]>(initialReimbursements);
+  const { toast } = useToast();
+
+  const [showReimbursementModal, setShowReimbursementModal] = useState(false);
+  const [reimbursementFormData, setReimbursementFormData] = useState({
+    category: 'General',
+    currency: 'USDC',
+    amount: '',
+    description: '',
+  });
+
+  const handleReimbursementSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowReimbursementModal(false);
+    toast({ title: "Request Submitted", description: "Your reimbursement request is pending approval." });
+    setReimbursementFormData({ category: 'General', currency: 'USDC', amount: '', description: '' });
+  };
 
   const handleApprove = (id: string) => {
     setReimbursements(prevReimbursements =>
@@ -55,6 +73,7 @@ export default function ReimbursementsPage() {
           </div>
           <div className="flex space-x-4">
              <button
+                onClick={() => setShowReimbursementModal(true)}
                 className="px-4 py-2 bg-white text-black hover:bg-gray-200 transition-colors font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2"
              >
                 <Plus className="w-4 h-4" />
@@ -155,6 +174,13 @@ export default function ReimbursementsPage() {
           </div>
        </div>
 
+      <ReimbursementModal
+        isOpen={showReimbursementModal}
+        onClose={() => setShowReimbursementModal(false)}
+        formData={reimbursementFormData}
+        onFormChange={setReimbursementFormData}
+        onSubmit={handleReimbursementSubmit}
+      />
     </div>
   );
 }

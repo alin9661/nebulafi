@@ -1,5 +1,6 @@
 "use client"
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Vote } from 'lucide-react';
 import { GlassCard } from '../ui/GlassCard';
 
@@ -25,11 +26,20 @@ export const ProposalModal: React.FC<ProposalModalProps> = ({
   onFormChange,
   onSubmit,
 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="absolute inset-0" onClick={onClose}></div>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+      <div className="absolute inset-0 cursor-pointer" onClick={onClose} aria-hidden="true"></div>
       <GlassCard className="w-full max-w-lg relative z-10 p-8" variant="high">
         <button
           onClick={onClose}
@@ -100,6 +110,7 @@ export const ProposalModal: React.FC<ProposalModalProps> = ({
           </button>
         </form>
       </GlassCard>
-    </div>
+    </div>,
+    document.body
   );
 };

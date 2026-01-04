@@ -1,7 +1,10 @@
 "use client"
-import React from 'react';
+import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Hexagon, ArrowDownLeft, ArrowUpRight } from 'lucide-react';
+import { DepositModal } from '@/components/modals/DepositModal';
+import { SendModal } from '@/components/modals/SendModal';
+import { useToast } from '@/components/ui/use-toast';
 
 const assets = [
   {
@@ -83,6 +86,27 @@ const treasuryTx = [
 
 export default function TreasuryPage() {
   const totalValue = assets.reduce((sum, asset) => sum + asset.valueUsd, 0);
+  const { toast } = useToast();
+
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [depositFormData, setDepositFormData] = useState({ asset: 'USDC', amount: '' });
+
+  const [showSendModal, setShowSendModal] = useState(false);
+  const [sendFormData, setSendFormData] = useState({ recipient: '', asset: 'USDC', amount: '' });
+
+  const handleDepositSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowDepositModal(false);
+    toast({ title: "Deposit Initiated", description: `Depositing ${depositFormData.amount} ${depositFormData.asset} to treasury.` });
+    setDepositFormData({ asset: 'USDC', amount: '' });
+  };
+
+  const handleSendSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowSendModal(false);
+    toast({ title: "Transaction Created", description: "Awaiting multisig approval (3/5)." });
+    setSendFormData({ recipient: '', asset: 'USDC', amount: '' });
+  };
 
   return (
     <div className="space-y-8 animate-fade-in-up">
@@ -94,11 +118,17 @@ export default function TreasuryPage() {
           </p>
         </div>
         <div className="flex space-x-2">
-          <button className="px-4 py-2 bg-white text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2 hover:bg-gray-200">
+          <button
+            onClick={() => setShowDepositModal(true)}
+            className="px-4 py-2 bg-white text-black font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2 hover:bg-gray-200"
+          >
             <ArrowDownLeft className="w-4 h-4" />
             <span>Deposit</span>
           </button>
-          <button className="px-4 py-2 border border-white text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2 hover:bg-white hover:text-black transition-colors">
+          <button
+            onClick={() => setShowSendModal(true)}
+            className="px-4 py-2 border border-white text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center space-x-2 hover:bg-white hover:text-black transition-colors"
+          >
             <ArrowUpRight className="w-4 h-4" />
             <span>Send</span>
           </button>
@@ -182,6 +212,22 @@ export default function TreasuryPage() {
           </table>
         </div>
       </div>
+
+      <DepositModal
+        isOpen={showDepositModal}
+        onClose={() => setShowDepositModal(false)}
+        formData={depositFormData}
+        onFormChange={setDepositFormData}
+        onSubmit={handleDepositSubmit}
+      />
+
+      <SendModal
+        isOpen={showSendModal}
+        onClose={() => setShowSendModal(false)}
+        formData={sendFormData}
+        onFormChange={setSendFormData}
+        onSubmit={handleSendSubmit}
+      />
     </div>
   );
 }

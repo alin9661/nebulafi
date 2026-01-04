@@ -1,0 +1,39 @@
+# CodeRabbit Configuration
+# https://docs.coderabbit.ai/guides/configure-coderabbit
+
+language: "en-US"
+
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
+
+  path_filters:
+    - "!**/*.lock"
+    - "!**/package-lock.json"
+    - "!**/.next/**"
+    - "!**/node_modules/**"
+    - "!**/target/**"
+
+  path_instructions:
+    - path: "src/**/*.tsx"
+      instructions: "Review React components for best practices, accessibility, and performance. Check for proper TypeScript usage."
+    - path: "src/**/*.ts"
+      instructions: "Review TypeScript code for type safety and best practices."
+    - path: "contract/**/*.move"
+      instructions: "Review Move smart contract code for security vulnerabilities, proper resource management, and Aptos best practices."
+    - path: "indexer/**/*.rs"
+      instructions: "Review Rust code for memory safety, proper error handling, and idiomatic Rust patterns."
+
+chat:
+  auto_reply: true
