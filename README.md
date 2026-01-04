@@ -1,44 +1,92 @@
-## Create Aptos Dapp Custom Indexer Template
+# Nebulafi Treasury Management System
 
-The custom indexer template provides a starter dapp with all components to run a full-stack app with indexer support.
+A blockchain treasury management system built for the **NYU Blockchain Lab**, sponsored by **Aptos Labs**. This project manages crypto-to-crypto sponsorship flows with secure multi-signature operations and comprehensive governance controls.
 
-## Read the Custom Indexer template docs
+## Tech Stack
 
-To get started with the Custom Indexer template and learn more about the template functionality and usage, head over to the [Custom Indexer template docs](https://learn.aptoslabs.com/en/dapp-templates/custom-indexer-template)
+| Layer | Technology |
+|-------|------------|
+| **Blockchain** | Aptos with Move smart contracts |
+| **Multisig** | MSafe integration for secure treasury operations |
+| **Frontend** | React / Next.js with shadcn/ui + TailwindCSS |
+| **Backend** | Supabase / PostgreSQL |
+| **Deployment** | Vercel |
+| **Wallets** | Petra, Martian, Pontem, Fewcha |
 
-## The Custom Indexer template provides:
+## Core Features
 
-- **Folder structure** - A pre-made dapp folder structure with `src` for frontend, `contract` for Move contract and `indexer` for custom indexer.
-- **Dapp infrastructure** - All required dependencies a dapp needs to start building on the Aptos network.
-- **Wallet Info implementation** - Pre-made `WalletInfo` components to demonstrate how one can use to read a connected Wallet info.
-- **Message board functionality implementation** - Pre-made `MessageBoard` component to create, update and read messages from the Move smart contract.
-- **Analytics dashboard** - Pre-made `Analytics` component to show the number of messages created and updated.
-- **Point program** - Minimal example to show you how to define a point program based on events (e.g. create message, update message) and show that on the analytics dashboard, with sorting support.
+- **Eboard Governance Voting** - Democratic decision-making for treasury operations
+- **Multi-Signature Transactions** - MSafe-powered secure treasury management
+- **Audit Trails** - Complete transaction history and accountability
+- **Multi-Wallet Support** - Connect with Petra, Martian, Pontem, or Fewcha wallets
+- **Sponsorship Flow Management** - Track and manage crypto-to-crypto sponsorship flows
 
-## What tools the template uses?
+## Architecture
 
-- React framework
-- shadcn/ui + tailwind for styling
-- Aptos TS SDK
-- Aptos Wallet Adapter
-- Node based Move commands
-- Rust based Aptos Indexer SDK
+This project follows a **minimal on-chain principle**—smart contracts handle only essential logic while most functionality lives off-chain for flexibility and cost efficiency.
 
-## What Move commands are available?
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Frontend (Next.js)                      │
+│                     Deployed on Vercel                       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+│  Supabase/PG    │  │  Aptos Chain    │  │     MSafe       │
+│  (Off-chain)    │  │  (On-chain)     │  │  (Multisig)     │
+└─────────────────┘  └─────────────────┘  └─────────────────┘
+```
 
-The tool utilizes [aptos-cli npm package](https://github.com/aptos-labs/aptos-cli) that lets us run Aptos CLI in a Node environment.
+### Project Structure
 
-Some commands are built-in the template and can be ran as a npm script, for example:
+- **`src/`** - Next.js frontend application
+- **`contract/`** - Move smart contracts for Aptos
+- **`indexer/`** - Rust-based custom indexer (Aptos Indexer SDK)
 
-- `npm run move:publish` - a command to publish the Move contract
-- `npm run move:test` - a command to run Move unit tests
-- `npm run move:compile` - a command to compile the Move contract
-- `npm run move:upgrade` - a command to upgrade the Move contract
-- `npm run dev` - a command to run the frontend locally
-- `npm run deploy` - a command to deploy the dapp to Vercel
+## Security
 
-For all other available CLI commands, can run `npx aptos` and see a list of all available commands.
+- **Formal Verification** - Move Prover for mathematical correctness guarantees
+- **Multi-Layer Protection** - Defense-in-depth security patterns
+- **Multi-Signature Requirements** - MSafe integration for treasury operations
 
-## Running the Custom Indexer template
+## Development Commands
 
-Please refer to the [Custom Indexer template docs](https://learn.aptoslabs.com/en/dapp-templates/custom-indexer-template) for more information on how to run the Custom Indexer template.
+### Frontend
+```bash
+npm run dev          # Start development server
+npm run build        # Production build
+npm run lint         # ESLint check
+npm run fmt          # Format code with Prettier
+```
+
+### Move Smart Contract
+```bash
+npm run move:compile  # Compile the contract
+npm run move:test     # Run Move unit tests
+npm run move:publish  # Deploy contract
+npm run move:upgrade  # Upgrade existing contract
+```
+
+### Indexer
+```bash
+cd indexer
+cargo build           # Build the indexer
+cargo run             # Run the indexer
+```
+
+## Deployment
+
+Deploy to Vercel:
+```bash
+npm run deploy
+```
+
+## License
+
+This project is developed for the NYU Blockchain Lab.
+
+---
+
+*Sponsored by Aptos Labs*
