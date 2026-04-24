@@ -1,13 +1,10 @@
 "use client"
 import React from 'react';
 import Link from 'next/link';
-import { Wallet, Hexagon } from 'lucide-react';
+import { Hexagon } from 'lucide-react';
+import { WalletSelector } from '@/components/wallet/WalletSelector';
 
-interface NavbarProps {
-  onConnect: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ onConnect }) => {
+export const Navbar: React.FC = () => {
   return (
     <nav className="relative z-50 w-full px-6 py-8 flex justify-between items-center max-w-7xl mx-auto">
       <Link href="/" className="flex items-center space-x-3">
@@ -24,15 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onConnect }) => {
         <Link href="/governance" className="hover:text-white transition-colors">Governance</Link>
         <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
       </div>
-      <button
-        onClick={onConnect}
-        className="group relative px-6 py-2 bg-white text-black font-mono text-sm font-bold uppercase tracking-wider hover:bg-gray-200 transition-colors"
-      >
-        <span className="flex items-center space-x-2">
-          <Wallet className="w-4 h-4" />
-          <span>Connect Wallet</span>
-        </span>
-      </button>
+      <WalletSelector />
     </nav>
   );
 };
