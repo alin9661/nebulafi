@@ -1,12 +1,12 @@
 "use client"
-import React from 'react';
+import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
+import { ConnectWalletDialog } from '@/components/wallet/WalletSelector';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
-interface HeroSectionProps {
-  onConnect: () => void;
-}
+export const HeroSection: React.FC = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onConnect }) => {
   return (
     <main className="flex-grow flex flex-col justify-center relative z-10 px-6 pt-10 pb-20">
       <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -27,13 +27,17 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onConnect }) => {
             Manage organization reimbursements and assets with secure multi-signature authorization on Aptos. USD Stablecoin native.
           </p>
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-            <button
-              onClick={onConnect}
-              className="px-8 py-4 bg-white text-black font-bold font-mono uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center space-x-3"
-            >
-              <span>Launch Dashboard</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="px-8 py-4 bg-white text-black font-bold font-mono uppercase tracking-widest hover:scale-105 transition-transform flex items-center justify-center space-x-3"
+                >
+                  <span>Launch Dashboard</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </DialogTrigger>
+              <ConnectWalletDialog close={() => setIsDialogOpen(false)} />
+            </Dialog>
           </div>
         </div>
 

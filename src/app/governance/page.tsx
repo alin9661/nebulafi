@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { GlassCard } from '@/components/ui/GlassCard';
 import { Plus, Clock } from 'lucide-react';
+import { ProposalModal } from '@/components/modals/ProposalModal';
+import { useToast } from '@/components/ui/use-toast';
 
 const proposals = [
   {
@@ -68,6 +70,21 @@ const proposals = [
 
 export default function GovernancePage() {
   const [activeTab, setActiveTab] = useState('Active');
+  const [showProposalModal, setShowProposalModal] = useState(false);
+  const [proposalFormData, setProposalFormData] = useState({
+    title: '',
+    category: 'budget',
+    endDate: '7 days',
+    description: '',
+  });
+  const { toast } = useToast();
+
+  const handleProposalSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowProposalModal(false);
+    toast({ title: "Proposal Created", description: "Your proposal has been submitted for voting." });
+    setProposalFormData({ title: '', category: 'budget', endDate: '7 days', description: '' });
+  };
 
   const filteredProposals = proposals.filter(proposal => {
     if (activeTab === 'All') return true;
@@ -81,7 +98,10 @@ export default function GovernancePage() {
           <h1 className="text-3xl font-display font-bold mb-2 uppercase tracking-tight">GOVERNANCE</h1>
           <p className="text-gray-400 font-mono text-sm">Update multisig signers and spending limits.</p>
         </div>
-        <button className="px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-200 transition-colors">
+        <button
+          onClick={() => setShowProposalModal(true)}
+          className="px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-200 transition-colors"
+        >
           <Plus className="w-4 h-4" />
           <span>New Proposal</span>
         </button>
@@ -120,11 +140,10 @@ export default function GovernancePage() {
         {filteredProposals.map((proposal) => (
           <GlassCard key={proposal.id} className="flex flex-col h-full hover:border-white/40 transition-colors group">
             <div className="flex justify-between items-start mb-6">
-              <div className={`px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border ${
-                proposal.status === 'active' ? 'bg-white text-black border-white' :
+              <div className={`px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border ${proposal.status === 'active' ? 'bg-white text-black border-white' :
                 proposal.status === 'passed' ? 'bg-transparent text-gray-300 border-gray-500' :
-                'bg-transparent text-gray-600 border-gray-800 line-through'
-              }`}>
+                  'bg-transparent text-gray-600 border-gray-800 line-through'
+                }`}>
                 {proposal.status}
               </div>
               <div className="text-xs text-gray-400 font-mono flex items-center border border-white/10 px-2 py-1">
@@ -163,6 +182,14 @@ export default function GovernancePage() {
           </GlassCard>
         ))}
       </div>
+
+      <ProposalModal
+        isOpen={showProposalModal}
+        onClose={() => setShowProposalModal(false)}
+        formData={proposalFormData}
+        onFormChange={setProposalFormData}
+        onSubmit={handleProposalSubmit}
+      />
     </div>
   );
 }
