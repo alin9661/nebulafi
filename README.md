@@ -55,18 +55,18 @@ This project follows a **minimal on-chain principle**—smart contracts handle o
 
 ### Frontend
 ```bash
-npm run dev          # Start development server
-npm run build        # Production build
-npm run lint         # ESLint check
-npm run fmt          # Format code with Prettier
+bun run dev          # Start development server
+bun run build        # Production build
+bun run lint         # ESLint check
+bun run fmt          # Format code with Prettier
 ```
 
 ### Move Smart Contract
 ```bash
-npm run move:compile  # Compile the contract
-npm run move:test     # Run Move unit tests
-npm run move:publish  # Deploy contract
-npm run move:upgrade  # Upgrade existing contract
+bun run move:compile  # Compile the contract
+bun run move:test     # Run Move unit tests
+bun run move:publish  # Deploy contract
+bun run move:upgrade  # Upgrade existing contract
 ```
 
 ### Indexer
@@ -80,7 +80,7 @@ cargo run             # Run the indexer
 
 Deploy to Vercel:
 ```bash
-npm run deploy
+bun run deploy
 ```
 
 ## License
