@@ -52,7 +52,7 @@ export default function ContactPage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-display font-bold mb-4 uppercase tracking-tight">Get in Touch</h1>
               <p className="text-gray-400 font-mono text-sm leading-relaxed">
-                Have questions about NebulaFi? We're here to help. Send us a message and we'll respond as soon as possible.
+                Have questions about NebulaFi? We&apos;re here to help. Send us a message and we&apos;ll respond as soon as possible.
               </p>
             </div>
 
@@ -85,7 +85,7 @@ export default function ContactPage() {
             <div className="border-t border-white/10 pt-6">
               <h3 className="font-display font-bold text-sm mb-3 uppercase tracking-widest">Response Time</h3>
               <p className="text-gray-400 font-mono text-sm leading-relaxed">
-                We typically respond within 24-48 hours during business days. For urgent matters, please include "URGENT" in your message subject.
+                We typically respond within 24-48 hours during business days. For urgent matters, please include &ldquo;URGENT&rdquo; in your message subject.
               </p>
             </div>
           </div>
