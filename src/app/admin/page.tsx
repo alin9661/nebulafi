@@ -68,7 +68,7 @@ export default function AdminPage() {
                                 <span className="px-2 py-0.5 border border-white/20 text-[10px] font-mono uppercase text-gray-300">{req.role}</span>
                              </h4>
                              <div className="font-mono text-xs text-gray-400 mb-2">{req.walletAddress} • {req.date}</div>
-                             <p className="text-sm text-gray-300 font-mono italic">"{req.message}"</p>
+                             <p className="text-sm text-gray-300 font-mono italic">&ldquo;{req.message}&rdquo;</p>
                          </div>
                      </div>
                      <div className="flex items-center gap-3 md:pl-6 md:border-l border-white/10">
