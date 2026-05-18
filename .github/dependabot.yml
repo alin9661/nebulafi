@@ -1,14 +1,14 @@
 version: 2
 updates:
-  # Frontend npm dependencies
-  - package-ecosystem: "npm"
+  # Frontend bun dependencies
+  - package-ecosystem: "bun"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
     open-pull-requests-limit: 10
     groups:
-      npm-minor-patch:
+      bun-minor-patch:
         patterns:
           - "*"
         update-types:
@@ -16,7 +16,7 @@ updates:
           - "patch"
     labels:
       - "dependencies"
-      - "npm"
+      - "bun"
     commit-message:
       prefix: "chore(deps)"
 

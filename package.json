@@ -14,7 +14,7 @@
     "deploy": "vercel",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "_fmt": "prettier 'src/**/*.ts'",
-    "fmt": "npm run _fmt -- --write"
+    "fmt": "bun run _fmt --write"
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "^5.0.0",
