@@ -17,7 +17,7 @@ export const getUserStats = async ({
   userStats: UserStat[];
   total: number;
 }> => {
-  const rows = await getPostgresClient()(
+  const rows = await getPostgresClient().query(
     `SELECT * FROM user_stats ORDER BY ${sortedBy} ${order} LIMIT ${limit} OFFSET ${
       (page - 1) * limit
     }`
@@ -35,7 +35,7 @@ export const getUserStats = async ({
     };
   });
 
-  const rows2 = await getPostgresClient()(`
+  const rows2 = await getPostgresClient().query(`
         SELECT COUNT(*) FROM user_stats;
     `);
   const count = rows2[0].count;

@@ -17,7 +17,7 @@ export const getMessages = async ({
   messages: Message[];
   total: number;
 }> => {
-  const rows = await getPostgresClient()(
+  const rows = await getPostgresClient().query(
     `SELECT * FROM messages ORDER BY ${sortedBy} ${order} LIMIT ${limit} OFFSET ${
       (page - 1) * limit
     }`
@@ -34,7 +34,7 @@ export const getMessages = async ({
     };
   });
 
-  const rows2 = await getPostgresClient()(`
+  const rows2 = await getPostgresClient().query(`
         SELECT COUNT(*) FROM messages;
     `);
   const count = rows2[0].count;
