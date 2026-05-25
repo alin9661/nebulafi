@@ -16,7 +16,7 @@ ahash = { version = "0.8.12", features = ["serde"] }
 anyhow = "1.0.102"
 async-trait = "0.1.89"
 chrono = { version = "0.4.44", features = ["clock", "serde"] }
-clap = { version = "4.5.60", features = ["derive", "unstable-styles"] }
+clap = { version = "4.6.1", features = ["derive", "unstable-styles"] }
 # Do NOT enable the postgres feature here, it is conditionally enabled in a feature
 # block in the Cargo.toml file for the processor crate.
 # https://github.com/aptos-labs/aptos-indexer-processors/pull/325
@@ -45,11 +45,11 @@ num_cpus = "1.17.0"
 poem = { version = "3.1.12", features = ["anyhow"] }
 rayon = "1.12.0"
 serde = { version = "1.0.228", features = ["derive", "rc"] }
-serde_json = { version = "1.0.149", features = ["preserve_order"] }
+serde_json = { version = "1.0.150", features = ["preserve_order"] }
 strum = { version = "0.28.0", features = ["derive"] }
 tracing = "0.1.44"
 tokio = { version = "1.37.0", features = ["full"] }
-url = { version = "2.5.4", features = ["serde"] }
+url = { version = "2.5.8", features = ["serde"] }
 
 # Postgres SSL support
 native-tls = "0.2.18"
