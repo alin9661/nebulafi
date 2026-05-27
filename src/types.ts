@@ -1,13 +1,12 @@
-
 export interface Transaction {
   id: string;
-  type: 'reimbursement' | 'deposit' | 'service';
+  type: "reimbursement" | "deposit" | "service";
   amount: number;
   currency: string;
   valueUsd: number;
   requester: string;
   category: string;
-  status: 'approved' | 'pending' | 'rejected' | 'executed';
+  status: "approved" | "pending" | "rejected" | "executed";
   date: string;
   signatures: number;
   requiredSignatures: number;
@@ -20,9 +19,9 @@ export interface Proposal {
   description: string;
   votesFor: number;
   votesAgainst: number;
-  status: 'active' | 'passed' | 'failed';
+  status: "active" | "passed" | "failed";
   endDate: string;
-  category: 'budget' | 'protocol' | 'personnel';
+  category: "budget" | "protocol" | "personnel";
 }
 
 export interface CoinPrice {
@@ -44,12 +43,12 @@ export interface Asset {
 
 export interface TreasuryTransaction {
   id: string;
-  type: 'inflow' | 'outflow';
+  type: "inflow" | "outflow";
   amount: number;
   asset: string;
   counterparty: string;
   date: string;
-  status: 'confirmed' | 'pending';
+  status: "confirmed" | "pending";
 }
 
 export interface Organization {
@@ -57,7 +56,7 @@ export interface Organization {
   name: string;
   handle: string;
   description: string;
-  category: 'Protocol' | 'Investment' | 'Service' | 'Social';
+  category: "Protocol" | "Investment" | "Service" | "Social";
   treasuryBalance: number;
   memberCount: number;
   proposalCount: number;
@@ -71,7 +70,7 @@ export interface JoinRequest {
   walletAddress: string;
   date: string;
   role: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   message: string;
 }
 
@@ -79,9 +78,9 @@ export interface Member {
   id: string;
   name: string;
   handle: string;
-  role: 'Admin' | 'Member' | 'Contributor' | 'Viewer';
+  role: "Admin" | "Member" | "Contributor" | "Viewer";
   joinDate: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   avatar: string;
   walletAddress: string;
 }

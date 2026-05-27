@@ -20,7 +20,7 @@ export const getMessages = async ({
   const rows = await getPostgresClient().query(
     `SELECT * FROM messages ORDER BY ${sortedBy} ${order} LIMIT ${limit} OFFSET ${
       (page - 1) * limit
-    }`
+    }`,
   );
 
   const messages = rows.map((row) => {
