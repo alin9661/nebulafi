@@ -7,7 +7,7 @@ export type UpdateMessageArguments = {
 };
 
 export const updateMessage = (
-  args: UpdateMessageArguments
+  args: UpdateMessageArguments,
 ): InputTransactionData => {
   const { messageObj, content } = args;
   return {

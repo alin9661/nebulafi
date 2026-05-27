@@ -20,7 +20,7 @@ export const getUserStats = async ({
   const rows = await getPostgresClient().query(
     `SELECT * FROM user_stats ORDER BY ${sortedBy} ${order} LIMIT ${limit} OFFSET ${
       (page - 1) * limit
-    }`
+    }`,
   );
 
   const userStats = rows.map((row) => {
