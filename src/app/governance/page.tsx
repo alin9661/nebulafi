@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Clock } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProposalModal } from "@/components/modals/ProposalModal";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
 type ProposalStatus = "active" | "passed" | "failed";
 type Proposal = {
@@ -60,11 +61,6 @@ export default function GovernancePage() {
     activeTab === "All" ? true : p.status === activeTab.toLowerCase()
   );
 
-  // Tabs and proposal grid wire up in the next commits.
-  void setActiveTab;
-  void TABS;
-  void filteredProposals;
-
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
       {/* Page header */}
@@ -103,6 +99,36 @@ export default function GovernancePage() {
         ))}
       </section>
 
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-border">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={cn(
+              "pb-3 -mb-px text-[11px] font-medium uppercase tracking-[0.12em] border-b-2 transition-colors",
+              tab === activeTab
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
+      {/* Proposals grid */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredProposals.map((p) => (
+          <ProposalCard key={p.id} proposal={p} />
+        ))}
+        {filteredProposals.length === 0 && (
+          <div className="col-span-full py-16 text-center text-muted-foreground text-sm">
+            No proposals in this view.
+          </div>
+        )}
+      </section>
+
       <ProposalModal
         isOpen={showProposalModal}
         onClose={() => setShowProposalModal(false)}
@@ -111,5 +137,46 @@ export default function GovernancePage() {
         onSubmit={handleProposalSubmit}
       />
     </div>
+  );
+}
+
+function ProposalCard({ proposal }: { proposal: Proposal }) {
+  return (
+    <Card className="flex flex-col p-6 hover:border-border-strong transition-colors group">
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <StatusPill status={proposal.status} />
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-mono tabular-nums text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          {proposal.endDate}
+        </div>
+      </div>
+
+      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
+        {proposal.category}
+      </div>
+      <h3 className="font-display text-2xl font-medium tracking-[-0.01em] leading-[1.2] text-foreground mb-3 group-hover:underline decoration-1 underline-offset-4">
+        {proposal.title}
+      </h3>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">{proposal.description}</p>
+    </Card>
+  );
+}
+
+function StatusPill({ status }: { status: ProposalStatus }) {
+  const map: Record<ProposalStatus, { label: string; cls: string }> = {
+    active: { label: "Voting", cls: "border-primary/25 bg-primary-tint text-primary" },
+    passed: { label: "Passed", cls: "border-success/25 bg-success-tint text-success" },
+    failed: { label: "Failed", cls: "border-destructive/25 bg-destructive/10 text-destructive" },
+  };
+  const { label, cls } = map[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10.5px] font-semibold uppercase tracking-[0.08em]",
+        cls
+      )}
+    >
+      {label}
+    </span>
   );
 }
