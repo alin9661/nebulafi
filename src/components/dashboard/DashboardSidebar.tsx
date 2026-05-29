@@ -1,19 +1,20 @@
-"use client"
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+"use client";
+
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Settings,
   LogOut,
   Users,
-  Hexagon,
   FileText,
   Vote,
   Landmark,
   Building2,
   UserPlus,
-} from 'lucide-react';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface DashboardSidebarProps {
   onDisconnect: () => void;
@@ -27,52 +28,74 @@ export const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const pathname = usePathname();
 
   const sidebarItems = [
-    { id: 'overview', path: '/overview', icon: LayoutDashboard, label: 'Overview' },
-    { id: 'organizations', path: '/organization', icon: Building2, label: 'Organizations' },
-    ...(isAdmin ? [{ id: 'admin', path: '/admin', icon: UserPlus, label: 'Admin Access' }] : []),
-    { id: 'treasury', path: '/treasury', icon: Landmark, label: 'Treasury' },
-    { id: 'governance', path: '/governance', icon: Vote, label: 'Governance' },
-    { id: 'reimbursements', path: '/reimbursements', icon: FileText, label: 'Reimbursements' },
-    { id: 'members', path: '/members', icon: Users, label: 'Members' },
-    { id: 'settings', path: '/settings', icon: Settings, label: 'Settings' },
+    { id: "overview", path: "/overview", icon: LayoutDashboard, label: "Overview" },
+    { id: "organizations", path: "/organization", icon: Building2, label: "Organizations" },
+    ...(isAdmin
+      ? [{ id: "admin", path: "/admin", icon: UserPlus, label: "Admin Access" }]
+      : []),
+    { id: "treasury", path: "/treasury", icon: Landmark, label: "Treasury" },
+    { id: "governance", path: "/governance", icon: Vote, label: "Governance" },
+    { id: "reimbursements", path: "/reimbursements", icon: FileText, label: "Reimbursements" },
+    { id: "members", path: "/members", icon: Users, label: "Members" },
+    { id: "settings", path: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
-    <aside className="w-20 lg:w-64 h-screen border-r border-white/10 flex-col hidden md:flex z-20 bg-black/50 backdrop-blur-md">
-      <a
-        className="h-24 flex items-center justify-center lg:justify-start lg:px-8 border-b border-white/10"
+    <aside className="w-20 lg:w-60 h-screen border-r border-border flex-col hidden md:flex z-20 bg-background shrink-0">
+      {/* Wordmark */}
+      <Link
         href="/"
+        className="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-border"
       >
-        <Hexagon className="text-white w-6 h-6" strokeWidth={1.5} />
-        <span className="ml-4 font-display font-bold text-xl hidden lg:block tracking-widest uppercase">NebulaFi</span>
-      </a>
+        <span className="font-display text-xl font-medium uppercase tracking-[0.06em] text-foreground hidden lg:inline">
+          Nebulafi
+          <span className="text-primary ml-1.5">·</span>
+        </span>
+        <span className="font-display text-2xl font-medium text-foreground lg:hidden">
+          N<span className="text-primary">·</span>
+        </span>
+      </Link>
 
-      <nav className="flex-1 py-8 flex flex-col space-y-1 px-4">
+      {/* Nav */}
+      <nav className="flex-1 py-4 flex flex-col gap-0.5 px-3" aria-label="Primary">
         {sidebarItems.map((item) => {
-          const isActive = pathname === item.path;
+          const isActive =
+            pathname === item.path || pathname.startsWith(`${item.path}/`);
           return (
             <Link
               key={item.id}
               href={item.path}
-              className={`w-full flex items-center p-3 transition-all duration-200 group ${isActive
-                  ? 'bg-white text-black'
-                  : 'text-gray-400 hover:text-white hover:bg-white/5'
-                }`}
+              aria-current={isActive ? "page" : undefined}
+              className={cn(
+                "flex items-center rounded-sm text-[13px] font-medium transition-colors",
+                "justify-center lg:justify-start h-10 w-full lg:px-3 lg:py-2 lg:gap-3",
+                isActive
+                  ? "bg-primary-tint text-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              )}
             >
-              <item.icon className="w-5 h-5" strokeWidth={1.5} />
-              <span className="ml-4 hidden lg:block font-mono text-sm uppercase tracking-wider">{item.label}</span>
+              <item.icon
+                className={cn("w-4 h-4 shrink-0", isActive ? "text-primary" : "")}
+                strokeWidth={1.75}
+              />
+              <span className="hidden lg:inline truncate">{item.label}</span>
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10">
+      {/* Footer actions */}
+      <div className="border-t border-border py-2 px-3">
         <button
           onClick={onDisconnect}
-          className="w-full flex items-center p-3 text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+          className={cn(
+            "flex items-center rounded-sm text-[13px] font-medium transition-colors",
+            "justify-center lg:justify-start h-10 w-full lg:px-3 lg:py-2 lg:gap-3",
+            "text-muted-foreground hover:text-foreground hover:bg-accent"
+          )}
         >
-          <LogOut className="w-5 h-5" />
-          <span className="ml-4 hidden lg:block font-mono text-sm uppercase tracking-wider">Disconnect</span>
+          <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.75} />
+          <span className="hidden lg:inline">Disconnect</span>
         </button>
       </div>
     </aside>
