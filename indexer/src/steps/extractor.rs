@@ -210,45 +210,41 @@ impl ContractUpgradeChange {
         changes.iter().for_each(|change| {
             if let Some(change) = change.change.as_ref() {
                 match change {
-                    Change::WriteModule(write_module_change) => {
+                    Change::WriteModule(write_module_change)
                         if standardize_address(write_module_change.address.as_str())
-                            == contract_address
-                        {
-                            raw_module_changes.insert(
-                                (
-                                    standardize_address(write_module_change.address.as_str()),
-                                    write_module_change
-                                        .data
-                                        .clone()
-                                        .unwrap_or_else(|| {
-                                            panic!("MoveModuleBytecode data is missing",)
-                                        })
-                                        .abi
-                                        .clone()
-                                        .unwrap_or_else(|| {
-                                            panic!("MoveModuleBytecode abi is missing",)
-                                        })
-                                        .name,
-                                ),
-                                write_module_change.data.clone().unwrap(),
-                            );
-                        }
+                            == contract_address =>
+                    {
+                        raw_module_changes.insert(
+                            (
+                                standardize_address(write_module_change.address.as_str()),
+                                write_module_change
+                                    .data
+                                    .clone()
+                                    .unwrap_or_else(
+                                        || panic!("MoveModuleBytecode data is missing",),
+                                    )
+                                    .abi
+                                    .clone()
+                                    .unwrap_or_else(|| panic!("MoveModuleBytecode abi is missing",))
+                                    .name,
+                            ),
+                            write_module_change.data.clone().unwrap(),
+                        );
                     }
-                    Change::WriteResource(write_resource_change) => {
+                    Change::WriteResource(write_resource_change)
                         if standardize_address(write_resource_change.address.as_str())
                             == contract_address
-                            && write_resource_change.type_str == "0x1::code::PackageRegistry"
-                        {
-                            let package_upgrade: PackageUpgradeChangeOnChain =
-                                serde_json::from_str(write_resource_change.data.as_str())
-                                    .unwrap_or_else(|_| {
-                                        panic!(
-                                            "Failed to parse PackageUpgradeChangeOnChain, {}",
-                                            write_resource_change.data.as_str()
-                                        )
-                                    });
-                            raw_package_changes.push(package_upgrade);
-                        }
+                            && write_resource_change.type_str == "0x1::code::PackageRegistry" =>
+                    {
+                        let package_upgrade: PackageUpgradeChangeOnChain =
+                            serde_json::from_str(write_resource_change.data.as_str())
+                                .unwrap_or_else(|_| {
+                                    panic!(
+                                        "Failed to parse PackageUpgradeChangeOnChain, {}",
+                                        write_resource_change.data.as_str()
+                                    )
+                                });
+                        raw_package_changes.push(package_upgrade);
                     }
                     _ => {}
                 }
