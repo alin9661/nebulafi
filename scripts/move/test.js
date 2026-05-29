@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const cli = require("@aptos-labs/ts-sdk/dist/common/cli/index.js");
+const cli = require("@aptos-labs/ts-sdk/cli");
 
 async function test() {
   const move = new cli.Move();

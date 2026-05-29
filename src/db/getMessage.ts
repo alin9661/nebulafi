@@ -10,9 +10,10 @@ export const getMessage = async ({
 }: GetMessageProps): Promise<{
   message: Message;
 }> => {
-  const rows = await getPostgresClient().query(
-    `SELECT * FROM messages WHERE message_obj_addr = '${messageObjAddr}'`,
-  );
+  const sql = getPostgresClient();
+  const rows = await sql`
+    SELECT * FROM messages WHERE message_obj_addr = ${messageObjAddr}
+  `;
   if (rows.length === 0) {
     throw new Error("Message not found");
   }

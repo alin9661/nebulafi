@@ -1,5 +1,5 @@
 require("dotenv").config();
-const cli = require("@aptos-labs/ts-sdk/dist/common/cli/index.js");
+const cli = require("@aptos-labs/ts-sdk/cli");
 const aptosSDK = require("@aptos-labs/ts-sdk")
 
 async function publish() {

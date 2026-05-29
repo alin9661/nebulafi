@@ -79,7 +79,7 @@ impl ContractProcessor {
         loop {
             match buffer_receiver.recv().await {
                 Ok(txn_context) => {
-                    if txn_context.data.events.len() == 0 && txn_context.data.changes.len() == 0 {
+                    if txn_context.data.events.is_empty() && txn_context.data.changes.is_empty() {
                         continue;
                     }
                     tracing::info!(

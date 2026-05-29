@@ -207,54 +207,49 @@ impl ContractUpgradeChange {
             AHashMap::new();
         let mut raw_package_changes: Vec<PackageUpgradeChangeOnChain> = vec![];
 
-        changes
-            .iter()
-            .for_each(|change| match change.change.as_ref() {
-                Some(change) => match change {
-                    Change::WriteModule(write_module_change) => {
+        changes.iter().for_each(|change| {
+            if let Some(change) = change.change.as_ref() {
+                match change {
+                    Change::WriteModule(write_module_change)
                         if standardize_address(write_module_change.address.as_str())
-                            == contract_address
-                        {
-                            raw_module_changes.insert(
-                                (
-                                    standardize_address(write_module_change.address.as_str()),
-                                    write_module_change
-                                        .data
-                                        .clone()
-                                        .unwrap_or_else(|| {
-                                            panic!("MoveModuleBytecode data is missing",)
-                                        })
-                                        .abi
-                                        .clone()
-                                        .unwrap_or_else(|| {
-                                            panic!("MoveModuleBytecode abi is missing",)
-                                        })
-                                        .name,
-                                ),
-                                write_module_change.data.clone().unwrap(),
-                            );
-                        }
+                            == contract_address =>
+                    {
+                        raw_module_changes.insert(
+                            (
+                                standardize_address(write_module_change.address.as_str()),
+                                write_module_change
+                                    .data
+                                    .clone()
+                                    .unwrap_or_else(
+                                        || panic!("MoveModuleBytecode data is missing",),
+                                    )
+                                    .abi
+                                    .clone()
+                                    .unwrap_or_else(|| panic!("MoveModuleBytecode abi is missing",))
+                                    .name,
+                            ),
+                            write_module_change.data.clone().unwrap(),
+                        );
                     }
-                    Change::WriteResource(write_resource_change) => {
+                    Change::WriteResource(write_resource_change)
                         if standardize_address(write_resource_change.address.as_str())
                             == contract_address
-                            && write_resource_change.type_str == "0x1::code::PackageRegistry"
-                        {
-                            let package_upgrade: PackageUpgradeChangeOnChain =
-                                serde_json::from_str(write_resource_change.data.as_str())
-                                    .unwrap_or_else(|_| {
-                                        panic!(
-                                            "Failed to parse PackageUpgradeChangeOnChain, {}",
-                                            write_resource_change.data.as_str()
-                                        )
-                                    });
-                            raw_package_changes.push(package_upgrade);
-                        }
+                            && write_resource_change.type_str == "0x1::code::PackageRegistry" =>
+                    {
+                        let package_upgrade: PackageUpgradeChangeOnChain =
+                            serde_json::from_str(write_resource_change.data.as_str())
+                                .unwrap_or_else(|_| {
+                                    panic!(
+                                        "Failed to parse PackageUpgradeChangeOnChain, {}",
+                                        write_resource_change.data.as_str()
+                                    )
+                                });
+                        raw_package_changes.push(package_upgrade);
                     }
                     _ => {}
-                },
-                None => {}
-            });
+                }
+            }
+        });
 
         let package_changes = raw_package_changes
             .iter()
@@ -266,7 +261,7 @@ impl ContractUpgradeChange {
         let module_changes = raw_package_changes
             .iter()
             .flat_map(|package_change| package_change.packages.clone())
-            .map(|package| {
+            .flat_map(|package| {
                 package
                     .modules
                     .iter()
@@ -290,7 +285,6 @@ impl ContractUpgradeChange {
                     })
                     .collect::<Vec<ModuleUpgrade>>()
             })
-            .flatten()
             .collect::<Vec<ModuleUpgrade>>();
 
         module_changes

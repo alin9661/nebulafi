@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
     derive(
         Deserialize,
         Serialize,
-        strum::EnumVariantNames,
+        strum::VariantNames,
         strum::IntoStaticStr,
         strum::Display,
         clap::ValueEnum

@@ -6,7 +6,7 @@ module message_board_addr::test_end_to_end {
 
     use aptos_framework::event;
 
-    use message_board_addr::message_board;
+    use message_board_addr::custom_indexer_ex_message_board as message_board;
 
     #[test(aptos_framework = @aptos_framework, deployer = @message_board_addr, sender = @0x100)]
     fun test_end_to_end(aptos_framework: &signer, deployer: &signer, sender: &signer) {
@@ -32,7 +32,7 @@ module message_board_addr::test_end_to_end {
     }
 
     #[test(aptos_framework = @aptos_framework, deployer = @message_board_addr, sender1 = @0x100, sender2 = @0x101)]
-    #[expected_failure(abort_code = 1, location = message_board_addr::message_board)]
+    #[expected_failure(abort_code = 1, location = message_board_addr::custom_indexer_ex_message_board)]
     fun test_only_creator_can_update(aptos_framework: &signer, deployer: &signer, sender1: &signer, sender2: &signer) {
         message_board::init_module_for_test(aptos_framework, deployer);
 

@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use super::database_utils::{ArcDbPool, DbPoolConnection};
 
-fn establish_connection(database_url: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
+fn establish_connection(database_url: &str) -> BoxFuture<'_, ConnectionResult<AsyncPgConnection>> {
     use native_tls::{Certificate, TlsConnector};
     use postgres_native_tls::MakeTlsConnector;
 
@@ -79,7 +79,7 @@ pub async fn new_db_pool(database_url: &str, max_pool_size: u32) -> ArcDbPool {
     Arc::new(pool)
 }
 
-pub async fn get_db_connection(pool: &ArcDbPool) -> Result<DbPoolConnection, ProcessorError> {
+pub async fn get_db_connection(pool: &ArcDbPool) -> Result<DbPoolConnection<'_>, ProcessorError> {
     pool.get().await.map_err(|e| {
         tracing::error!("Error getting connection from DB pool: {:?}", e);
         ProcessorError::DBStoreError {
