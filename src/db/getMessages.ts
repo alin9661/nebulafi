@@ -8,6 +8,9 @@ export type GetMessagesProps = {
   order: "ASC" | "DESC";
 };
 
+const ALLOWED_SORT_COLUMNS = new Set(["creation_timestamp"]);
+const ALLOWED_SORT_ORDERS = new Set(["ASC", "DESC"]);
+
 export const getMessages = async ({
   page,
   limit,
@@ -17,10 +20,24 @@ export const getMessages = async ({
   messages: Message[];
   total: number;
 }> => {
-  const rows = await getPostgresClient().query(
-    `SELECT * FROM messages ORDER BY ${sortedBy} ${order} LIMIT ${limit} OFFSET ${
-      (page - 1) * limit
-    }`,
+  if (!ALLOWED_SORT_COLUMNS.has(sortedBy)) {
+    throw new Error(`invalid sort column: ${sortedBy}`);
+  }
+  if (!ALLOWED_SORT_ORDERS.has(order)) {
+    throw new Error(`invalid sort order: ${order}`);
+  }
+  if (!Number.isInteger(page) || page < 1) {
+    throw new Error(`invalid page: ${page}`);
+  }
+  if (!Number.isInteger(limit) || limit < 1 || limit > 1000) {
+    throw new Error(`invalid limit: ${limit}`);
+  }
+
+  const sql = getPostgresClient();
+  const offset = (page - 1) * limit;
+  const rows = await sql.query(
+    `SELECT * FROM messages ORDER BY ${sortedBy} ${order} LIMIT $1 OFFSET $2`,
+    [limit, offset],
   );
 
   const messages = rows.map((row) => {
@@ -34,9 +51,7 @@ export const getMessages = async ({
     };
   });
 
-  const rows2 = await getPostgresClient().query(`
-        SELECT COUNT(*) FROM messages;
-    `);
+  const rows2 = await sql`SELECT COUNT(*) FROM messages`;
   const count = rows2[0].count;
 
   return { messages, total: count };
