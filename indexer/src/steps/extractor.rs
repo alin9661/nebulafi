@@ -207,10 +207,9 @@ impl ContractUpgradeChange {
             AHashMap::new();
         let mut raw_package_changes: Vec<PackageUpgradeChangeOnChain> = vec![];
 
-        changes
-            .iter()
-            .for_each(|change| match change.change.as_ref() {
-                Some(change) => match change {
+        changes.iter().for_each(|change| {
+            if let Some(change) = change.change.as_ref() {
+                match change {
                     Change::WriteModule(write_module_change) => {
                         if standardize_address(write_module_change.address.as_str())
                             == contract_address
@@ -252,9 +251,9 @@ impl ContractUpgradeChange {
                         }
                     }
                     _ => {}
-                },
-                None => {}
-            });
+                }
+            }
+        });
 
         let package_changes = raw_package_changes
             .iter()
@@ -266,7 +265,7 @@ impl ContractUpgradeChange {
         let module_changes = raw_package_changes
             .iter()
             .flat_map(|package_change| package_change.packages.clone())
-            .map(|package| {
+            .flat_map(|package| {
                 package
                     .modules
                     .iter()
@@ -290,7 +289,6 @@ impl ContractUpgradeChange {
                     })
                     .collect::<Vec<ModuleUpgrade>>()
             })
-            .flatten()
             .collect::<Vec<ModuleUpgrade>>();
 
         module_changes
