@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { DepositModal } from "@/components/modals/DepositModal";
 import { SendModal } from "@/components/modals/SendModal";
 import { useToast } from "@/components/ui/use-toast";
@@ -76,7 +78,7 @@ export default function TreasuryPage() {
     setSendFormData({ recipient: "", asset: "USDC", amount: "" });
   };
 
-  // Scaffolded; data wiring lands as the page sections are built up.
+  // Sections wired progressively; suppress unused-symbol warnings on the in-flight state.
   void totalValue;
   void treasuryTx;
   void currency;
@@ -84,12 +86,31 @@ export default function TreasuryPage() {
 
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
-      <Card className="p-6">
-        <div className="font-display text-2xl text-foreground">Treasury Overview</div>
-        <div className="text-sm text-muted-foreground mt-1">
-          Page scaffold — sections land in follow-up commits.
+      {/* Page header */}
+      <header className="flex flex-col gap-6 pb-8 border-b border-border md:flex-row md:items-end md:justify-between">
+        <div className="flex-1">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
+            Dashboard · <span className="font-mono text-foreground">FALL 2025</span>
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-medium tracking-[-0.02em] leading-[1.05] mb-3 text-foreground">
+            Treasury Overview
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            NYU Blockchain Lab · Last indexed at block{" "}
+            <span className="font-mono text-foreground tabular-nums">247,891,432</span> · 2 minutes ago
+          </p>
         </div>
-      </Card>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" onClick={() => setShowSendModal(true)} className="gap-2">
+            <ArrowUpRight className="w-4 h-4" />
+            Send
+          </Button>
+          <Button onClick={() => setShowDepositModal(true)} className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover">
+            <ArrowDownLeft className="w-4 h-4" />
+            Deposit
+          </Button>
+        </div>
+      </header>
 
       <DepositModal
         isOpen={showDepositModal}
