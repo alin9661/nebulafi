@@ -1,14 +1,15 @@
-"use client"
-import React, { useState } from 'react';
+"use client";
+
+import React, { useState } from "react";
 import {
   Bell,
-  Hexagon,
   ChevronDown,
   ChevronUp,
   ShieldCheck,
   Check,
   Plus,
-} from 'lucide-react';
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Organization {
   id: string;
@@ -22,9 +23,9 @@ interface Organization {
 }
 
 const organizations: Organization[] = [
-  { id: '1', name: 'Nebula DAO', handle: '@nebuladao', category: 'Protocol', treasuryBalance: 4500000, memberCount: 1240, verified: true, avatar: 'N' },
-  { id: '2', name: 'Aptos Ventures', handle: '@aptosvc', category: 'Investment', treasuryBalance: 12000000, memberCount: 45, verified: true, avatar: 'A' },
-  { id: '3', name: 'Builder Guild', handle: '@builderguild', category: 'Social', treasuryBalance: 150000, memberCount: 300, verified: false, avatar: 'B' },
+  { id: "1", name: "Nebula DAO", handle: "@nebuladao", category: "Protocol", treasuryBalance: 4500000, memberCount: 1240, verified: true, avatar: "N" },
+  { id: "2", name: "Aptos Ventures", handle: "@aptosvc", category: "Investment", treasuryBalance: 12000000, memberCount: 45, verified: true, avatar: "A" },
+  { id: "3", name: "Builder Guild", handle: "@builderguild", category: "Social", treasuryBalance: 150000, memberCount: 300, verified: false, avatar: "B" },
 ];
 
 interface DashboardHeaderProps {
@@ -36,102 +37,127 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({ isAdmin = true
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
 
   return (
-    <header className="h-24 border-b border-white/10 flex items-center justify-between px-8 sticky top-0 z-30 bg-black/80 backdrop-blur-md shrink-0">
-      <div className="md:hidden flex items-center">
-         <Hexagon className="text-white w-6 h-6" />
-      </div>
-
-      {/* Org Switcher / Context */}
-      <div className="flex items-center">
-         <div className="relative">
-           <button
-             onClick={() => setShowOrgDropdown(!showOrgDropdown)}
-             className="flex items-center space-x-3 cursor-pointer group hover:bg-white/5 p-2 rounded-lg transition-colors border border-transparent hover:border-white/10 text-left focus:outline-none"
-           >
-              <div className="w-8 h-8 bg-white text-black flex items-center justify-center font-display font-bold text-sm">
-                 {currentOrg.avatar}
+    <header className="h-16 border-b border-border flex items-center justify-between px-6 sticky top-0 z-30 bg-background/85 backdrop-blur-md shrink-0">
+      {/* Org switcher */}
+      <div className="flex items-center gap-4 min-w-0">
+        <div className="relative">
+          <button
+            onClick={() => setShowOrgDropdown(!showOrgDropdown)}
+            className="flex items-center gap-3 px-2 py-1.5 rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary hover:bg-accent transition-colors"
+          >
+            <div className="w-8 h-8 bg-secondary text-foreground flex items-center justify-center font-display font-semibold text-sm rounded-md border border-border">
+              {currentOrg.avatar}
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-[10px] font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                Organization
               </div>
-              <div className="hidden sm:block">
-                 <div className="text-xs font-mono text-gray-400 uppercase tracking-wider">Organization</div>
-                 <div className="text-sm font-bold font-display flex items-center gap-2">
-                     {currentOrg.name}
-                     {showOrgDropdown ? (
-                        <ChevronUp className="w-3 h-3 text-white" />
-                     ) : (
-                        <ChevronDown className="w-3 h-3 text-gray-500 group-hover:text-white" />
-                     )}
-                 </div>
+              <div className="text-sm font-medium font-display flex items-center gap-1.5 text-foreground">
+                {currentOrg.name}
+                {showOrgDropdown ? (
+                  <ChevronUp className="w-3 h-3 text-foreground" />
+                ) : (
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                )}
               </div>
-           </button>
+            </div>
+          </button>
 
-           {/* Org Dropdown Menu */}
-           {showOrgDropdown && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowOrgDropdown(false)}></div>
-                <div className="absolute top-full left-0 mt-2 w-72 z-50 animate-fade-in-up shadow-2xl">
-                   <div className="bg-[#0a0a0a] border border-white/20 rounded-none overflow-hidden">
-                      <div className="max-h-80 overflow-y-auto scrollbar-hide">
-                          {organizations.map(org => (
-                            <button
-                              key={org.id}
-                              onClick={() => {
-                                 setCurrentOrg(org);
-                                 setShowOrgDropdown(false);
-                              }}
-                              className={`w-full text-left p-4 flex items-center space-x-3 transition-colors border-b border-white/10 last:border-0 ${
-                                currentOrg.id === org.id
-                                  ? 'bg-white/10'
-                                  : 'hover:bg-white/5'
-                              }`}
-                            >
-                                <div className={`w-8 h-8 flex items-center justify-center font-display font-bold text-sm ${currentOrg.id === org.id ? 'bg-white text-black' : 'bg-black border border-white/20'}`}>
-                                   {org.avatar}
-                                </div>
-                                <div>
-                                   <div className="text-sm font-bold font-display flex items-center gap-2 text-white">
-                                     {org.name}
-                                     {org.verified && <ShieldCheck className="w-3 h-3 text-gray-400" />}
-                                   </div>
-                                   <div className="text-[10px] text-gray-500 font-mono uppercase tracking-wider">{org.category}</div>
-                                </div>
-                                {currentOrg.id === org.id && <Check className="w-4 h-4 ml-auto text-white" />}
-                            </button>
-                          ))}
-                      </div>
-                      <button
-                        onClick={() => {
-                           setShowOrgDropdown(false);
-                        }}
-                        className="w-full p-3 bg-white/5 hover:bg-white hover:text-black transition-colors border-t border-white/10 flex items-center justify-center space-x-2 text-xs font-mono font-bold uppercase tracking-wider"
-                      >
-                         <Plus className="w-3 h-3" />
-                         <span>Join / Create New</span>
-                      </button>
-                   </div>
+          {showOrgDropdown && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowOrgDropdown(false)}
+              />
+              <div className="absolute top-full left-0 mt-2 w-72 z-50 animate-fade-in-up">
+                <div className="bg-card border border-border rounded-md overflow-hidden shadow-sm">
+                  <div className="max-h-80 overflow-y-auto scrollbar-hide">
+                    {organizations.map((org) => {
+                      const isSelected = currentOrg.id === org.id;
+                      return (
+                        <button
+                          key={org.id}
+                          onClick={() => {
+                            setCurrentOrg(org);
+                            setShowOrgDropdown(false);
+                          }}
+                          className={cn(
+                            "w-full text-left p-3 flex items-center gap-3 transition-colors border-b border-border last:border-0",
+                            isSelected ? "bg-primary-tint" : "hover:bg-accent"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-8 h-8 flex items-center justify-center font-display font-semibold text-sm rounded-md",
+                              isSelected
+                                ? "bg-primary text-primary-foreground"
+                                : "bg-secondary text-foreground border border-border"
+                            )}
+                          >
+                            {org.avatar}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="text-sm font-medium font-display flex items-center gap-1.5 text-foreground">
+                              {org.name}
+                              {org.verified && (
+                                <ShieldCheck className="w-3 h-3 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-mono uppercase tracking-[0.08em]">
+                              {org.category}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-4 h-4 ml-auto text-primary" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setShowOrgDropdown(false)}
+                    className="w-full p-3 bg-muted hover:bg-accent transition-colors border-t border-border flex items-center justify-center gap-2 text-[11px] font-medium uppercase tracking-[0.08em] text-foreground"
+                  >
+                    <Plus className="w-3 h-3" />
+                    Join / Create new
+                  </button>
                 </div>
-              </>
-           )}
-         </div>
+              </div>
+            </>
+          )}
+        </div>
 
-         <div className="h-8 w-px bg-white/10 mx-6 hidden md:block"></div>
-         <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-xs font-mono font-bold uppercase tracking-widest text-gray-300">Aptos Testnet</span>
-         </div>
+        <div className="h-6 w-px bg-border mx-2 hidden md:block" />
+        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 bg-success-tint border border-success/20 rounded-full">
+          <span className="w-1.5 h-1.5 bg-success rounded-full" />
+          <span className="text-[10px] font-medium uppercase tracking-[0.1em] text-success">
+            Aptos Testnet
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center space-x-6">
-        <button className="relative p-2 hover:bg-white/5 rounded-full transition-colors">
-          <Bell className="w-5 h-5 text-gray-300" />
-          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-white rounded-full"></span>
+      {/* Right cluster */}
+      <div className="flex items-center gap-3">
+        <button
+          className="relative p-2 hover:bg-accent rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          aria-label="Notifications"
+        >
+          <Bell className="w-4 h-4 text-muted-foreground" strokeWidth={1.75} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-primary rounded-full" />
         </button>
-        <div className="flex items-center space-x-4 pl-6 border-l border-white/10">
+        <div className="flex items-center gap-3 pl-3 border-l border-border">
           <div className="text-right hidden sm:block">
-            <div className="text-sm font-bold text-white font-mono uppercase">{isAdmin ? 'Admin User' : 'Member User'}</div>
-            <div className="text-xs text-gray-400 font-mono">0x1a...bc9</div>
+            <div className="text-[12px] font-medium text-foreground">
+              {isAdmin ? "Admin User" : "Member User"}
+            </div>
+            <div className="text-[11px] text-muted-foreground font-mono tabular-nums">
+              0x1a…bc9
+            </div>
           </div>
-          <div className="w-10 h-10 bg-white/10 flex items-center justify-center border border-white/20">
-            <span className="font-bold text-sm">{isAdmin ? 'AD' : 'ME'}</span>
+          <div className="w-9 h-9 bg-secondary border border-border flex items-center justify-center rounded-md">
+            <span className="font-mono font-medium text-xs text-foreground">
+              {isAdmin ? "AD" : "ME"}
+            </span>
           </div>
         </div>
       </div>
