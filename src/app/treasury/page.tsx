@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { DepositModal } from "@/components/modals/DepositModal";
 import { SendModal } from "@/components/modals/SendModal";
 import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
 
 type Asset = {
   symbol: string;
@@ -78,11 +79,8 @@ export default function TreasuryPage() {
     setSendFormData({ recipient: "", asset: "USDC", amount: "" });
   };
 
-  // Sections wired progressively; suppress unused-symbol warnings on the in-flight state.
-  void totalValue;
+  // Recent activity ledger lands in the next commit.
   void treasuryTx;
-  void currency;
-  void tickerDot;
 
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
@@ -112,6 +110,68 @@ export default function TreasuryPage() {
         </div>
       </header>
 
+      {/* KPI row */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <KpiCard label="Total Treasury Value" value={`$${currency(totalValue)}`} meta={<span><span className="text-success">▲ 2.4%</span> last 30 days</span>} />
+        <KpiCard label="Active Proposals" value="3" meta="2 awaiting your vote" />
+        <KpiCard label="Multisig Threshold" value="4 / 7" meta="Quorum requirement" />
+        <KpiCard label="Members" value="7" meta="2 new this semester" />
+      </section>
+
+      {/* Composition table */}
+      <section>
+        <Card className="overflow-hidden">
+          <div className="flex items-baseline justify-between px-6 pt-6 pb-4 border-b border-border">
+            <h2 className="font-display text-xl font-medium tracking-[-0.005em] text-foreground m-0">
+              Treasury Composition
+            </h2>
+            <a className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground" href="#">
+              View ledger →
+            </a>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border">
+                  <th className="text-left px-6 py-4 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">Asset</th>
+                  <th className="text-right px-6 py-4 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">Amount</th>
+                  <th className="text-right px-6 py-4 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">USD Value</th>
+                  <th className="text-right px-6 py-4 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">Allocation</th>
+                  <th className="text-right px-6 py-4 text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">24h</th>
+                </tr>
+              </thead>
+              <tbody>
+                {assets.map((a) => (
+                  <tr key={a.symbol} className="border-b border-border last:border-b-0">
+                    <td className="px-6 py-4 font-medium text-foreground">
+                      <span className="inline-flex items-center gap-2">
+                        <span className={cn("inline-block w-2 h-2 rounded-sm", tickerDot[a.symbol] ?? "bg-muted-foreground")} />
+                        {a.symbol}
+                        <span className="text-xs text-muted-foreground font-normal ml-1">{a.name}</span>
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono tabular-nums text-foreground">{a.balance.toLocaleString()}.00</td>
+                    <td className="px-6 py-4 text-right font-mono tabular-nums text-muted-foreground">${currency(a.valueUsd)}</td>
+                    <td className="px-6 py-4 text-right font-mono tabular-nums">
+                      <span className="inline-flex items-center gap-2 justify-end">
+                        <span className="inline-block w-[60px] h-1 rounded-full bg-border overflow-hidden align-middle">
+                          <span className="block h-full bg-muted-foreground" style={{ width: `${a.allocation}%` }} />
+                        </span>
+                        {a.allocation}%
+                      </span>
+                    </td>
+                    <td className={cn("px-6 py-4 text-right font-mono tabular-nums text-xs", a.change24h > 0 ? "text-success" : a.change24h < 0 ? "text-destructive" : "text-muted-foreground")}>
+                      {a.change24h > 0 ? "+" : ""}
+                      {a.change24h.toFixed(1)}%
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </section>
+
       <DepositModal
         isOpen={showDepositModal}
         onClose={() => setShowDepositModal(false)}
@@ -128,5 +188,19 @@ export default function TreasuryPage() {
         onSubmit={handleSendSubmit}
       />
     </div>
+  );
+}
+
+function KpiCard({ label, value, meta }: { label: string; value: string; meta: React.ReactNode }) {
+  return (
+    <Card className="p-6">
+      <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-2">
+        {label}
+      </div>
+      <div className="font-mono tabular-nums text-3xl font-medium text-foreground leading-[1.1] mb-1">
+        {value}
+      </div>
+      <div className="text-xs text-muted-foreground">{meta}</div>
+    </Card>
   );
 }
