@@ -141,6 +141,10 @@ export default function GovernancePage() {
 }
 
 function ProposalCard({ proposal }: { proposal: Proposal }) {
+  const totalVotes = proposal.votesFor + proposal.votesAgainst;
+  const yeaPct = totalVotes ? (proposal.votesFor / totalVotes) * 100 : 0;
+  const nayPct = totalVotes ? (proposal.votesAgainst / totalVotes) * 100 : 0;
+
   return (
     <Card className="flex flex-col p-6 hover:border-border-strong transition-colors group">
       <div className="flex items-start justify-between gap-4 mb-5">
@@ -158,6 +162,29 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
         {proposal.title}
       </h3>
       <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">{proposal.description}</p>
+
+      {/* Vote bar */}
+      <div className="space-y-2 mt-auto">
+        <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+          <span>
+            Yea <span className="font-mono tabular-nums text-foreground ml-1">{proposal.votesFor}%</span>
+          </span>
+          <span>
+            Nay <span className="font-mono tabular-nums text-foreground ml-1">{proposal.votesAgainst}%</span>
+          </span>
+        </div>
+        <div className="flex h-1.5 w-full rounded-full overflow-hidden bg-border">
+          <div className="bg-success" style={{ width: `${yeaPct}%` }} />
+          <div className="bg-destructive" style={{ width: `${nayPct}%` }} />
+        </div>
+      </div>
+
+      {proposal.status === "active" && (
+        <div className="grid grid-cols-2 gap-2 pt-5 mt-5 border-t border-border">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary-hover">Cast vote</Button>
+          <Button variant="outline">View details</Button>
+        </div>
+      )}
     </Card>
   );
 }
