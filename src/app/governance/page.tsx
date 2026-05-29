@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ProposalModal } from "@/components/modals/ProposalModal";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -58,20 +60,48 @@ export default function GovernancePage() {
     activeTab === "All" ? true : p.status === activeTab.toLowerCase()
   );
 
-  // Scaffolded; tabs, stats row, and proposal grid land in follow-up commits.
+  // Tabs and proposal grid wire up in the next commits.
   void setActiveTab;
   void TABS;
-  void stats;
   void filteredProposals;
 
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
-      <Card className="p-6">
-        <div className="font-display text-2xl text-foreground">Proposals</div>
-        <div className="text-sm text-muted-foreground mt-1">
-          Page scaffold — header, stats, tabs, and proposal grid land in follow-up commits.
+      {/* Page header */}
+      <header className="flex flex-col gap-6 pb-8 border-b border-border md:flex-row md:items-end md:justify-between">
+        <div className="flex-1">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
+            Governance · <span className="font-mono text-foreground">FALL 2025</span>
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-medium tracking-[-0.02em] leading-[1.05] mb-3 text-foreground">
+            Proposals
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Update multisig signers, set spending limits, and steer treasury operations.
+          </p>
         </div>
-      </Card>
+        <Button
+          onClick={() => setShowProposalModal(true)}
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover shrink-0"
+        >
+          <Plus className="w-4 h-4" />
+          New proposal
+        </Button>
+      </header>
+
+      {/* Stats row */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <Card key={s.label} className="p-5">
+            <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-2">
+              {s.label}
+            </div>
+            <div className="font-mono tabular-nums text-3xl font-medium text-foreground leading-[1.1]">
+              {s.value}
+            </div>
+          </Card>
+        ))}
+      </section>
 
       <ProposalModal
         isOpen={showProposalModal}
