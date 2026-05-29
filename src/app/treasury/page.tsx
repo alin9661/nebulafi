@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ArrowRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DepositModal } from "@/components/modals/DepositModal";
@@ -78,9 +78,6 @@ export default function TreasuryPage() {
     toast({ title: "Transaction Created", description: "Awaiting multisig approval (3/5)." });
     setSendFormData({ recipient: "", asset: "USDC", amount: "" });
   };
-
-  // Recent activity ledger lands in the next commit.
-  void treasuryTx;
 
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
@@ -172,6 +169,47 @@ export default function TreasuryPage() {
         </Card>
       </section>
 
+      {/* Recent activity */}
+      <section>
+        <Card className="overflow-hidden">
+          <div className="flex items-baseline justify-between px-6 pt-6 pb-4 border-b border-border">
+            <h2 className="font-display text-xl font-medium tracking-[-0.005em] text-foreground m-0">
+              Recent Stablecoin Activity
+            </h2>
+            <a className="text-[11px] uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground" href="#">
+              All transactions →
+            </a>
+          </div>
+          <ul className="divide-y divide-border">
+            {treasuryTx.map((tx) => {
+              const isIn = tx.type === "inflow";
+              return (
+                <li key={tx.id} className="grid grid-cols-[28px_1fr_auto_auto] items-center gap-4 px-6 py-4 text-sm">
+                  <span className={cn(
+                    "w-7 h-7 rounded-sm border flex items-center justify-center",
+                    isIn ? "border-success/30 text-success" : "border-border text-muted-foreground"
+                  )}>
+                    {isIn ? <ArrowDownLeft className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="text-foreground">
+                      <span className="font-medium">{isIn ? "Received" : "Sent"}</span> ·{" "}
+                      <span className="font-mono text-muted-foreground">{tx.counterparty}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground font-mono tabular-nums mt-0.5">{tx.date}</div>
+                  </div>
+                  <div className={cn("text-right font-mono tabular-nums font-medium", isIn ? "text-success" : "text-foreground")}>
+                    {isIn ? "+" : "−"}
+                    {tx.amount.toLocaleString()} {tx.asset}
+                  </div>
+                  <StatusPill status={tx.status} />
+                </li>
+              );
+            })}
+          </ul>
+        </Card>
+      </section>
+
       <DepositModal
         isOpen={showDepositModal}
         onClose={() => setShowDepositModal(false)}
@@ -202,5 +240,20 @@ function KpiCard({ label, value, meta }: { label: string; value: string; meta: R
       </div>
       <div className="text-xs text-muted-foreground">{meta}</div>
     </Card>
+  );
+}
+
+function StatusPill({ status }: { status: Tx["status"] }) {
+  if (status === "completed") {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-success/25 bg-success-tint text-success text-[10.5px] font-semibold uppercase tracking-[0.08em]">
+        Settled
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-warning/25 bg-warning-tint text-warning text-[10.5px] font-semibold uppercase tracking-[0.08em]">
+      Pending
+    </span>
   );
 }
