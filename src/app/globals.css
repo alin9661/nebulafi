@@ -2,82 +2,113 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   NEBULAFI DESIGN SYSTEM — tokens mapped onto shadcn naming
+   See DESIGN.md for the canonical spec. HSL channels (no hsl())
+   so tailwind.config.ts can wrap with hsl(var(--token)).
+   ============================================================ */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Surface scale (warm cream + white) */
+    --background: 40 33% 97%;            /* #FAF8F4 cream */
+    --foreground: 210 25% 8%;            /* #0F1419 ink */
+    --foreground-faint: 216 5% 56%;      /* #8A8E94 captions */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;                   /* #FFFFFF */
+    --card-foreground: 210 25% 8%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
+    --popover-foreground: 210 25% 8%;
 
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
+    /* Primary = Aptos coral. Buttons/CTAs that use bg-primary become coral. */
+    --primary: 11 100% 60%;              /* #FF5733 */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 11 80% 55%;         /* #E84F2E */
+    --primary-tint: 13 100% 96%;         /* #FFF1ED */
 
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
+    /* Secondary = warm beige tint (sunken surface) */
+    --secondary: 40 27% 92%;
+    --secondary-foreground: 210 25% 8%;
 
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
+    /* Muted = sunken surface + ink-muted text */
+    --muted: 40 27% 95%;                 /* #F4F0E8 sunken */
+    --muted-foreground: 218 4% 38%;      /* #5E6166 */
 
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
+    /* Accent = subtle neutral for hover backgrounds (NOT the coral) */
+    --accent: 40 27% 92%;
+    --accent-foreground: 210 25% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    /* Destructive = sober brick (distinct from coral primary) */
+    --destructive: 356 47% 49%;          /* #B8434A */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    /* Semantic colors (additions to shadcn token set) */
+    --success: 155 46% 34%;              /* #2E7D5C forest */
+    --success-foreground: 0 0% 100%;
+    --success-tint: 150 16% 92%;
 
-    --radius: 0.5rem;
+    --warning: 43 89% 38%;               /* #B8860B goldenrod */
+    --warning-foreground: 0 0% 100%;
+    --warning-tint: 45 47% 91%;
 
-    --chart-1: 12 76% 61%;
+    --info: 216 41% 39%;                 /* #3B5C8C navy */
+    --info-foreground: 0 0% 100%;
+    --info-tint: 217 36% 94%;
 
-    --chart-2: 173 58% 39%;
+    /* Borders use warm beige, not gray */
+    --border: 40 26% 87%;                /* #E8E2D6 */
+    --border-strong: 40 18% 80%;         /* #D6CFC1 */
+    --input: 40 26% 87%;
+    --ring: 11 100% 60%;                 /* coral focus ring */
 
-    --chart-3: 197 37% 24%;
-
-    --chart-4: 43 74% 66%;
-
-    --chart-5: 27 87% 67%;
+    --radius: 0.375rem;                  /* 6px md */
   }
 
   .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: 220 17% 7%;            /* #0F1115 */
+    --foreground: 40 33% 92%;            /* #F2EDE3 warm off-white */
+    --foreground-faint: 220 9% 46%;      /* #6B7280 */
 
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 15% 12%;                 /* #1A1D23 */
+    --card-foreground: 40 33% 92%;
 
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 15% 12%;
+    --popover-foreground: 40 33% 92%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
+    /* Coral desaturated for dark mode */
+    --primary: 11 80% 55%;               /* #E84F2E */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 11 100% 60%;        /* #FF5733 */
+    --primary-tint: 11 30% 12%;          /* #2A1A14 */
 
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 220 12% 19%;
+    --secondary-foreground: 40 33% 92%;
 
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 220 13% 9%;                 /* #14171C sunken */
+    --muted-foreground: 218 11% 65%;     /* #9CA3AF */
 
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 220 12% 19%;
+    --accent-foreground: 40 33% 92%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 357 60% 62%;          /* #D86068 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --success: 155 36% 48%;              /* #4FA67D */
+    --success-foreground: 0 0% 100%;
+    --success-tint: 154 25% 12%;
+
+    --warning: 43 65% 53%;               /* #D4A53A */
+    --warning-foreground: 0 0% 100%;
+    --warning-tint: 43 30% 13%;
+
+    --info: 215 40% 60%;                 /* #6B8AC4 */
+    --info-foreground: 0 0% 100%;
+    --info-tint: 217 30% 15%;
+
+    --border: 220 12% 19%;               /* #2A2E36 */
+    --border-strong: 221 12% 26%;        /* #3A3F4A */
+    --input: 220 12% 19%;
+    --ring: 11 80% 55%;
   }
 }
 
@@ -87,88 +118,65 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: 'ss01';
+  }
+
+  /* Tabular numbers on every monospace element by default */
+  .font-mono, code, pre, kbd {
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Smooth heading scale defaults via Fraunces (display) */
+  h1, h2, h3 {
+    font-family: var(--font-display), Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
   }
 }
 
 @layer utilities {
   /* Hide scrollbar for Chrome, Safari and Opera */
-  .scrollbar-hide::-webkit-scrollbar {
-    display: none;
-  }
-
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
   /* Hide scrollbar for IE, Edge and Firefox */
   .scrollbar-hide {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
-  /* 3D preserve for animations */
-  .preserve-3d {
-    transform-style: preserve-3d;
+  .tabular-nums {
+    font-feature-settings: 'tnum';
+    font-variant-numeric: tabular-nums;
   }
 
-  /* Glass morphism effects */
-  .glass {
-    background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-  }
-
-  .glass-high {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  /* Editorial caption — italic Fraunces, muted */
+  .caption {
+    font-family: var(--font-display), Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    color: hsl(var(--muted-foreground));
   }
 }
 
-/* Custom animations */
+/* Custom animations (kept from prior codebase; ticker used by RootHeader, fade-in-up by landing) */
 @keyframes ticker {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-}
-
-@keyframes pulse-slow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-ticker { animation: ticker 40s linear infinite; }
+.animate-fade-in-up { animation: fade-in-up 0.6s ease-out; }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-ticker {
-  animation: ticker 40s linear infinite;
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 4s ease-in-out infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.6s ease-out;
 }

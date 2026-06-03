@@ -38,3 +38,6 @@ target
 
 CLAUDE.md
 .gstack/
+.claude/
+.playwright-mcp/
+tsconfig.tsbuildinfo
