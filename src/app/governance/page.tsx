@@ -1,81 +1,52 @@
-"use client"
-import React, { useState } from 'react';
-import { GlassCard } from '@/components/ui/GlassCard';
-import { Plus, Clock } from 'lucide-react';
-import { ProposalModal } from '@/components/modals/ProposalModal';
-import { useToast } from '@/components/ui/use-toast';
+"use client";
 
-const proposals = [
-  {
-    id: 1,
-    title: 'Add New Signer to Multisig',
-    description: 'Proposal to add Sarah Chen as a new authorized signer to the multisig wallet.',
-    category: 'Governance',
-    status: 'active',
-    votesFor: 75,
-    votesAgainst: 25,
-    endDate: '2024-03-20',
-  },
-  {
-    id: 2,
-    title: 'Increase Spending Limit',
-    description: 'Proposal to increase the daily spending limit from 10,000 USDC to 25,000 USDC.',
-    category: 'Treasury',
-    status: 'active',
-    votesFor: 60,
-    votesAgainst: 40,
-    endDate: '2024-03-18',
-  },
-  {
-    id: 3,
-    title: 'Fund Development Team',
-    description: 'Allocate 50,000 USDC for Q2 development team compensation and expenses.',
-    category: 'Treasury',
-    status: 'passed',
-    votesFor: 100,
-    votesAgainst: 0,
-    endDate: '2024-03-10',
-  },
-  {
-    id: 4,
-    title: 'Update Threshold to 4/6',
-    description: 'Increase signature threshold from 3/5 to 4/6 for enhanced security.',
-    category: 'Governance',
-    status: 'active',
-    votesFor: 50,
-    votesAgainst: 50,
-    endDate: '2024-03-22',
-  },
-  {
-    id: 5,
-    title: 'Partner Treasury Allocation',
-    description: 'Allocate 15,000 USDC to partner organizations for joint marketing initiative.',
-    category: 'Treasury',
-    status: 'failed',
-    votesFor: 40,
-    votesAgainst: 60,
-    endDate: '2024-03-05',
-  },
-  {
-    id: 6,
-    title: 'Remove Inactive Signer',
-    description: 'Proposal to remove John Doe from signers list due to 90 days of inactivity.',
-    category: 'Governance',
-    status: 'passed',
-    votesFor: 100,
-    votesAgainst: 0,
-    endDate: '2024-03-01',
-  },
+import React, { useState } from "react";
+import { Plus, Clock } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ProposalModal } from "@/components/modals/ProposalModal";
+import { useToast } from "@/components/ui/use-toast";
+import { cn } from "@/lib/utils";
+
+type ProposalStatus = "active" | "passed" | "failed";
+type Proposal = {
+  id: number;
+  title: string;
+  description: string;
+  category: "Treasury" | "Governance";
+  status: ProposalStatus;
+  votesFor: number;
+  votesAgainst: number;
+  endDate: string;
+};
+
+const proposals: Proposal[] = [
+  { id: 1, title: "Add New Signer to Multisig", description: "Proposal to add Sarah Chen as a new authorized signer to the multisig wallet.", category: "Governance", status: "active", votesFor: 75, votesAgainst: 25, endDate: "2026-03-20" },
+  { id: 2, title: "Increase Spending Limit", description: "Proposal to increase the daily spending limit from 10,000 USDC to 25,000 USDC.", category: "Treasury", status: "active", votesFor: 60, votesAgainst: 40, endDate: "2026-03-18" },
+  { id: 3, title: "Fund Development Team", description: "Allocate 50,000 USDC for Q2 development team compensation and expenses.", category: "Treasury", status: "passed", votesFor: 100, votesAgainst: 0, endDate: "2026-03-10" },
+  { id: 4, title: "Update Threshold to 4/6", description: "Increase signature threshold from 3/5 to 4/6 for enhanced security.", category: "Governance", status: "active", votesFor: 50, votesAgainst: 50, endDate: "2026-03-22" },
+  { id: 5, title: "Partner Treasury Allocation", description: "Allocate 15,000 USDC to partner organizations for joint marketing initiative.", category: "Treasury", status: "failed", votesFor: 40, votesAgainst: 60, endDate: "2026-03-05" },
+  { id: 6, title: "Remove Inactive Signer", description: "Proposal to remove John Doe from signers list due to 90 days of inactivity.", category: "Governance", status: "passed", votesFor: 100, votesAgainst: 0, endDate: "2026-03-01" },
+];
+
+const TABS = ["Active", "Passed", "Failed", "All"] as const;
+type Tab = (typeof TABS)[number];
+
+const stats = [
+  { label: "Total Proposals", value: "15" },
+  { label: "Participation Rate", value: "100%" },
+  { label: "Active Signers", value: "5" },
+  { label: "Threshold", value: "3 / 5" },
 ];
 
 export default function GovernancePage() {
-  const [activeTab, setActiveTab] = useState('Active');
+  const [activeTab, setActiveTab] = useState<Tab>("Active");
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [proposalFormData, setProposalFormData] = useState({
-    title: '',
-    category: 'budget',
-    endDate: '7 days',
-    description: '',
+    title: "",
+    category: "budget",
+    endDate: "7 days",
+    description: "",
   });
   const { toast } = useToast();
 
@@ -83,105 +54,80 @@ export default function GovernancePage() {
     e.preventDefault();
     setShowProposalModal(false);
     toast({ title: "Proposal Created", description: "Your proposal has been submitted for voting." });
-    setProposalFormData({ title: '', category: 'budget', endDate: '7 days', description: '' });
+    setProposalFormData({ title: "", category: "budget", endDate: "7 days", description: "" });
   };
 
-  const filteredProposals = proposals.filter(proposal => {
-    if (activeTab === 'All') return true;
-    return proposal.status.toLowerCase() === activeTab.toLowerCase();
-  });
+  const filteredProposals = proposals.filter((p) =>
+    activeTab === "All" ? true : p.status === activeTab.toLowerCase()
+  );
 
   return (
-    <div className="space-y-8 animate-fade-in-up">
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold mb-2 uppercase tracking-tight">GOVERNANCE</h1>
-          <p className="text-gray-400 font-mono text-sm">Update multisig signers and spending limits.</p>
+    <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
+      {/* Page header */}
+      <header className="flex flex-col gap-6 pb-8 border-b border-border md:flex-row md:items-end md:justify-between">
+        <div className="flex-1">
+          <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
+            Governance · <span className="font-mono text-foreground">FALL 2025</span>
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-medium tracking-[-0.02em] leading-[1.05] mb-3 text-foreground">
+            Proposals
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Update multisig signers, set spending limits, and steer treasury operations.
+          </p>
         </div>
-        <button
+        <Button
           onClick={() => setShowProposalModal(true)}
-          className="px-6 py-3 bg-white text-black font-mono text-sm font-bold uppercase tracking-widest flex items-center justify-center space-x-2 hover:bg-gray-200 transition-colors"
+          className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>New Proposal</span>
-        </button>
-      </div>
+          New proposal
+        </Button>
+      </header>
 
-      {/* Governance Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Total Proposals', value: '15' },
-          { label: 'Participation Rate', value: '100%' },
-          { label: 'Active Signers', value: '5' },
-          { label: 'Threshold', value: '3/5' },
-        ].map((stat, i) => (
-          <GlassCard key={i} className="p-4 text-center">
-            <div className="text-gray-400 text-[10px] font-mono uppercase tracking-widest mb-2">{stat.label}</div>
-            <div className="text-2xl font-bold font-display">{stat.value}</div>
-          </GlassCard>
+      {/* Stats row */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {stats.map((s) => (
+          <Card key={s.label} className="p-5">
+            <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-2">
+              {s.label}
+            </div>
+            <div className="font-mono tabular-nums text-3xl font-medium text-foreground leading-[1.1]">
+              {s.value}
+            </div>
+          </Card>
         ))}
-      </div>
+      </section>
 
-      {/* Filter Tabs */}
-      <div className="flex border-b border-white/10 space-x-6">
-        {['Active', 'Passed', 'Failed', 'All'].map((tab) => (
+      {/* Tabs */}
+      <div className="flex gap-6 border-b border-border">
+        {TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`pb-3 text-xs font-mono font-bold uppercase tracking-widest border-b-2 transition-colors ${tab === activeTab ? 'border-white text-white' : 'border-transparent text-gray-500 hover:text-gray-300'}`}
+            className={cn(
+              "pb-3 -mb-px text-[11px] font-medium uppercase tracking-[0.12em] border-b-2 transition-colors",
+              tab === activeTab
+                ? "border-primary text-primary"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            )}
           >
             {tab}
           </button>
         ))}
       </div>
 
-      {/* Proposals Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredProposals.map((proposal) => (
-          <GlassCard key={proposal.id} className="flex flex-col h-full hover:border-white/40 transition-colors group">
-            <div className="flex justify-between items-start mb-6">
-              <div className={`px-3 py-1 text-[10px] font-mono font-bold uppercase tracking-wider border ${proposal.status === 'active' ? 'bg-white text-black border-white' :
-                proposal.status === 'passed' ? 'bg-transparent text-gray-300 border-gray-500' :
-                  'bg-transparent text-gray-600 border-gray-800 line-through'
-                }`}>
-                {proposal.status}
-              </div>
-              <div className="text-xs text-gray-400 font-mono flex items-center border border-white/10 px-2 py-1">
-                <Clock className="w-3 h-3 mr-2" /> {proposal.endDate}
-              </div>
-            </div>
-
-            <div className="mb-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-blue-300 mb-2 block">{proposal.category}</span>
-              <h4 className="text-xl font-bold font-display leading-tight mb-3 group-hover:underline decoration-1 underline-offset-4">{proposal.title}</h4>
-              <p className="text-sm text-gray-400 font-mono leading-relaxed">{proposal.description}</p>
-            </div>
-
-            <div className="mt-auto pt-6 space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs font-mono uppercase tracking-wider text-gray-400">
-                  <span>For</span>
-                  <span>{proposal.votesFor}%</span>
-                </div>
-                <div className="h-1 w-full bg-gray-800 flex">
-                  <div className="h-full bg-white" style={{ width: `${proposal.votesFor}%` }}></div>
-                </div>
-              </div>
-
-              {proposal.status === 'active' && (
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                  <button className="py-2 border border-white/20 hover:bg-white hover:text-black transition-colors font-mono text-xs font-bold uppercase tracking-wider">
-                    Vote For
-                  </button>
-                  <button className="py-2 border border-white/20 hover:bg-white/10 transition-colors font-mono text-xs font-bold uppercase tracking-wider text-gray-300">
-                    Vote Against
-                  </button>
-                </div>
-              )}
-            </div>
-          </GlassCard>
+      {/* Proposals grid */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {filteredProposals.map((p) => (
+          <ProposalCard key={p.id} proposal={p} />
         ))}
-      </div>
+        {filteredProposals.length === 0 && (
+          <div className="col-span-full py-16 text-center text-muted-foreground text-sm">
+            No proposals in this view.
+          </div>
+        )}
+      </section>
 
       <ProposalModal
         isOpen={showProposalModal}
@@ -191,5 +137,73 @@ export default function GovernancePage() {
         onSubmit={handleProposalSubmit}
       />
     </div>
+  );
+}
+
+function ProposalCard({ proposal }: { proposal: Proposal }) {
+  const totalVotes = proposal.votesFor + proposal.votesAgainst;
+  const yeaPct = totalVotes ? (proposal.votesFor / totalVotes) * 100 : 0;
+  const nayPct = totalVotes ? (proposal.votesAgainst / totalVotes) * 100 : 0;
+
+  return (
+    <Card className="flex flex-col p-6 hover:border-border-strong transition-colors group">
+      <div className="flex items-start justify-between gap-4 mb-5">
+        <StatusPill status={proposal.status} />
+        <div className="inline-flex items-center gap-1.5 text-[11px] font-mono tabular-nums text-muted-foreground">
+          <Clock className="w-3 h-3" />
+          {proposal.endDate}
+        </div>
+      </div>
+
+      <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
+        {proposal.category}
+      </div>
+      <h3 className="font-display text-2xl font-medium tracking-[-0.01em] leading-[1.2] text-foreground mb-3 group-hover:underline decoration-1 underline-offset-4">
+        {proposal.title}
+      </h3>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">{proposal.description}</p>
+
+      {/* Vote bar */}
+      <div className="space-y-2 mt-auto">
+        <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground">
+          <span>
+            Yea <span className="font-mono tabular-nums text-foreground ml-1">{proposal.votesFor}%</span>
+          </span>
+          <span>
+            Nay <span className="font-mono tabular-nums text-foreground ml-1">{proposal.votesAgainst}%</span>
+          </span>
+        </div>
+        <div className="flex h-1.5 w-full rounded-full overflow-hidden bg-border">
+          <div className="bg-success" style={{ width: `${yeaPct}%` }} />
+          <div className="bg-destructive" style={{ width: `${nayPct}%` }} />
+        </div>
+      </div>
+
+      {proposal.status === "active" && (
+        <div className="grid grid-cols-2 gap-2 pt-5 mt-5 border-t border-border">
+          <Button className="bg-primary text-primary-foreground hover:bg-primary-hover">Cast vote</Button>
+          <Button variant="outline">View details</Button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function StatusPill({ status }: { status: ProposalStatus }) {
+  const map: Record<ProposalStatus, { label: string; cls: string }> = {
+    active: { label: "Voting", cls: "border-primary/25 bg-primary-tint text-primary" },
+    passed: { label: "Passed", cls: "border-success/25 bg-success-tint text-success" },
+    failed: { label: "Failed", cls: "border-destructive/25 bg-destructive/10 text-destructive" },
+  };
+  const { label, cls } = map[status];
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10.5px] font-semibold uppercase tracking-[0.08em]",
+        cls
+      )}
+    >
+      {label}
+    </span>
   );
 }
