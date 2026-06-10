@@ -4,3 +4,7 @@ export const NETWORK: Network =
   (process.env.NEXT_PUBLIC_APP_NETWORK as Network) ?? "testnet";
 export const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS;
 export const APTOS_API_KEY = process.env.NEXT_PUBLIC_APTOS_API_KEY;
+/** Feature flag: render the live on-chain treasury/governance instead of mocks. */
+export const TREASURY_V1 = process.env.NEXT_PUBLIC_TREASURY_V1 === "true";
+/** The 0x1::multisig_account the app treats as the treasury (testnet). */
+export const MULTISIG_ADDRESS = process.env.NEXT_PUBLIC_MULTISIG_ADDRESS;

@@ -8,6 +8,8 @@ import { DepositModal } from "@/components/modals/DepositModal";
 import { SendModal } from "@/components/modals/SendModal";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { TREASURY_V1 } from "@/constants";
+import { TreasuryLive } from "@/components/treasury/TreasuryLive";
 
 type Asset = {
   symbol: string;
@@ -53,6 +55,11 @@ const tickerDot: Record<string, string> = {
 };
 
 export default function TreasuryPage() {
+  // Mock stays the default until the live loop is verified (M1 plan step 4).
+  return TREASURY_V1 ? <TreasuryLive /> : <TreasuryMock />;
+}
+
+function TreasuryMock() {
   const totalValue = assets.reduce((sum, a) => sum + a.valueUsd, 0);
   const { toast } = useToast();
 
