@@ -50,7 +50,11 @@ export const upsertProposalMetadataOnServer = async (
       functionArguments: [props.multisigAddr],
     },
   });
-  if (props.seqNo < 1 || props.seqNo >= Number(nextSeq)) {
+  if (
+    !Number.isInteger(props.seqNo) ||
+    props.seqNo < 1 ||
+    props.seqNo >= Number(nextSeq)
+  ) {
     throw new Error("seq_no does not correspond to an on-chain proposal");
   }
   return upsertProposalMetadata(props);

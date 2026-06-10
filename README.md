@@ -69,7 +69,7 @@ bun run scripts/bootstrap-multisig.testnet.ts  # create the treasury multisig, p
 
 Then set in `.env`:
 
-```
+```bash
 NEXT_PUBLIC_MULTISIG_ADDRESS=<printed address>
 NEXT_PUBLIC_TREASURY_V1=true   # feature flag; unset/false renders the mock pages
 ```

@@ -41,7 +41,9 @@ export function mapTreasuryWriteError(e: unknown): TreasuryWriteError {
       ? e
       : e instanceof Error
         ? e.message
-        : JSON.stringify(e);
+        : // JSON.stringify returns undefined for undefined/functions/symbols —
+          // fall back to String(e) so `raw` is always a real string
+          (JSON.stringify(e) ?? String(e));
 
   if (/reject|declined|denied by user|user cancel/i.test(msg)) {
     return { kind: "user-rejected" };
