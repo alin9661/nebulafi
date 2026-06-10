@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ProposalModal } from "@/components/modals/ProposalModal";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { TREASURY_V1 } from "@/constants";
+import { GovernanceLive } from "@/components/governance/GovernanceLive";
 
 type ProposalStatus = "active" | "passed" | "failed";
 type Proposal = {
@@ -40,6 +42,11 @@ const stats = [
 ];
 
 export default function GovernancePage() {
+  // Mock stays the default until the live loop is verified (M1 plan step 4).
+  return TREASURY_V1 ? <GovernanceLive /> : <GovernanceMock />;
+}
+
+function GovernanceMock() {
   const [activeTab, setActiveTab] = useState<Tab>("Active");
   const [showProposalModal, setShowProposalModal] = useState(false);
   const [proposalFormData, setProposalFormData] = useState({

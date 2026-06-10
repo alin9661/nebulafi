@@ -3,6 +3,13 @@
 import { getLastSuccessVersion } from "@/db/getLastSuccessVersion";
 import { GetMessageProps, getMessage } from "@/db/getMessage";
 import { GetMessagesProps, getMessages } from "@/db/getMessages";
+import {
+  GetProposalMetadataProps,
+  ProposalMetadata,
+  UpsertProposalMetadataProps,
+  getProposalMetadataByAddr,
+  upsertProposalMetadata,
+} from "@/db/proposalMetadata";
 import { Message } from "@/lib/type/message";
 
 export const getMessagesOnServer = async ({
@@ -27,4 +34,16 @@ export const getMessageOnServer = async ({
 
 export const getLastVersionOnServer = async (): Promise<number> => {
   return getLastSuccessVersion();
+};
+
+export const upsertProposalMetadataOnServer = async (
+  props: UpsertProposalMetadataProps,
+): Promise<void> => {
+  return upsertProposalMetadata(props);
+};
+
+export const getProposalMetadataOnServer = async (
+  props: GetProposalMetadataProps,
+): Promise<ProposalMetadata[]> => {
+  return getProposalMetadataByAddr(props);
 };
