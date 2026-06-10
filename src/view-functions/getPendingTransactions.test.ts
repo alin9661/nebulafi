@@ -15,14 +15,24 @@ type ViewArgs = {
     typeArguments?: string[];
     functionArguments?: unknown[];
   };
+  options?: { ledgerVersion?: number };
 };
+
+const LEDGER_VERSION = 987654321;
 
 const viewMock = vi.hoisted(() =>
   vi.fn<(args: ViewArgs) => Promise<unknown[]>>(),
 );
 
+const getLedgerInfoMock = vi.hoisted(() =>
+  vi.fn<() => Promise<{ ledger_version: string }>>(),
+);
+
 vi.mock("@/lib/aptos", () => ({
-  getAptosClient: () => ({ view: viewMock }),
+  getAptosClient: () => ({
+    view: viewMock,
+    getLedgerInfo: getLedgerInfoMock,
+  }),
 }));
 
 const MULTISIG_ADDRESS = "0x" + "ab".repeat(32);
@@ -94,21 +104,32 @@ const canBeExecutedCalls = () =>
   viewMock.mock.calls
     .map(([args]) => args.payload)
     .filter(
-      (payload) => payload.function === "0x1::multisig_account::can_be_executed",
+      (payload) =>
+        payload.function === "0x1::multisig_account::can_be_executed",
     );
+
+const expectAllViewsPinnedToLedgerVersion = () => {
+  expect(viewMock.mock.calls.length).toBeGreaterThan(0);
+  for (const [args] of viewMock.mock.calls) {
+    expect(args.options).toEqual({ ledgerVersion: LEDGER_VERSION });
+  }
+};
 
 describe("getPendingTransactions", () => {
   beforeEach(() => {
     viewMock.mockReset();
+    getLedgerInfoMock.mockReset();
+    getLedgerInfoMock.mockResolvedValue({
+      ledger_version: String(LEDGER_VERSION),
+    });
   });
 
   it("returns [] when there are no pending transactions", async () => {
     routeViews({ pending: [], lastResolved: "0" });
 
-    await expect(getPendingTransactions(MULTISIG_ADDRESS)).resolves.toEqual(
-      [],
-    );
+    await expect(getPendingTransactions(MULTISIG_ADDRESS)).resolves.toEqual([]);
     expect(canBeExecutedCalls()).toHaveLength(0);
+    expectAllViewsPinnedToLedgerVersion();
   });
 
   it("decodes a single pending APT transfer", async () => {
@@ -144,6 +165,7 @@ describe("getPendingTransactions", () => {
         functionArguments: [MULTISIG_ADDRESS, "1"],
       }),
     ]);
+    expectAllViewsPinnedToLedgerVersion();
   });
 
   it("back-computes sequence numbers from last_resolved_sequence_number", async () => {
@@ -176,6 +198,7 @@ describe("getPendingTransactions", () => {
         functionArguments: [MULTISIG_ADDRESS, "8"],
       }),
     ]);
+    expectAllViewsPinnedToLedgerVersion();
   });
 
   it("returns null payloadHex and decoded for hash-only proposals", async () => {
@@ -193,6 +216,7 @@ describe("getPendingTransactions", () => {
 
     expect(transaction.payloadHex).toBeNull();
     expect(transaction.decoded).toBeNull();
+    expectAllViewsPinnedToLedgerVersion();
   });
 
   it("decodes functionId but not transfer fields for other functions", async () => {
@@ -210,5 +234,6 @@ describe("getPendingTransactions", () => {
       recipient: null,
       amountOctas: null,
     });
+    expectAllViewsPinnedToLedgerVersion();
   });
 });

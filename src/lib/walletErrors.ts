@@ -5,6 +5,12 @@
  * arrive via waitForTransaction rejections whose message embeds the
  * vm_status, e.g. "Move abort in 0x1::multisig_account: 0x507D3" — the hex is
  * the category-prefixed abort code (0x50000 permission_denied + 2003).
+ * Threshold-not-met aborts with error::invalid_argument(2009) — category 0x1
+ * (invalid_argument), so the canonical hex is 0x107d9.
+ * Execute transactions rejected at validation (prologue) never reach the VM;
+ * the fullnode returns "Invalid transaction: Type: Validation Code:
+ * MULTISIG_TRANSACTION_INSUFFICIENT_APPROVALS" (or ..._PAYLOAD_DOES_NOT_MATCH)
+ * with no "multisig_account" in the string, so those are matched top-level.
  */
 export type TreasuryWriteError =
   | { kind: "user-rejected" }
@@ -26,8 +32,7 @@ export const TREASURY_ERROR_MESSAGES: Record<
     "Your account can't cover gas — fund it with testnet APT.",
   "stale-sequence-number":
     "This proposal was already resolved — refreshing the list.",
-  "payload-mismatch":
-    "Submitted payload doesn't match the stored proposal.",
+  "payload-mismatch": "Submitted payload doesn't match the stored proposal.",
 };
 
 export function mapTreasuryWriteError(e: unknown): TreasuryWriteError {
@@ -45,7 +50,7 @@ export function mapTreasuryWriteError(e: unknown): TreasuryWriteError {
     // Abort codes from 0x1::multisig_account, matched both as raw decimal
     // and category-prefixed hex as rendered in vm_status strings.
     if (/0x507d3|\b2003\b/i.test(msg)) return { kind: "not-an-owner" };
-    if (/0x307d9|\b2009\b/i.test(msg)) return { kind: "threshold-not-met" };
+    if (/0x107d9|\b2009\b/i.test(msg)) return { kind: "threshold-not-met" };
     if (/0x107da|0x107d8|\b2010\b|\b2008\b/i.test(msg)) {
       return { kind: "payload-mismatch" };
     }
@@ -56,6 +61,12 @@ export function mapTreasuryWriteError(e: unknown): TreasuryWriteError {
   }
   if (/SEQUENCE_NUMBER_TOO_OLD/i.test(msg)) {
     return { kind: "stale-sequence-number" };
+  }
+  if (/MULTISIG_TRANSACTION_INSUFFICIENT_APPROVALS/i.test(msg)) {
+    return { kind: "threshold-not-met" };
+  }
+  if (/MULTISIG_TRANSACTION_PAYLOAD_DOES_NOT_MATCH/i.test(msg)) {
+    return { kind: "payload-mismatch" };
   }
   return { kind: "unknown", raw: msg };
 }

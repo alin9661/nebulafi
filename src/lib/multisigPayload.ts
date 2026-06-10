@@ -53,7 +53,9 @@ export const decodeMultisigPayload = (
 ): DecodedMultisigPayload | null => {
   try {
     const bytes = Hex.fromHexString(payloadHex).toUint8Array();
-    const inner = MultiSigTransactionPayload.deserialize(new Deserializer(bytes));
+    const inner = MultiSigTransactionPayload.deserialize(
+      new Deserializer(bytes),
+    );
     const entryFunction = inner.transaction_payload;
     if (!(entryFunction instanceof EntryFunction)) {
       return null; // script payloads are out of scope for M1
@@ -64,8 +66,12 @@ export const decodeMultisigPayload = (
       entryFunction.function_name.identifier,
     ].join("::");
 
-    if (functionId === APT_TRANSFER_FUNCTION && entryFunction.args.length === 2) {
-      const [recipientArg, amountArg] = entryFunction.args as EntryFunctionBytes[];
+    if (
+      functionId === APT_TRANSFER_FUNCTION &&
+      entryFunction.args.length === 2
+    ) {
+      const [recipientArg, amountArg] =
+        entryFunction.args as EntryFunctionBytes[];
       return {
         functionId,
         recipient: AccountAddress.from(recipientArg.value.value).toString(),

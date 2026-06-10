@@ -7,10 +7,7 @@ import {
   useWallet,
 } from "@aptos-labs/wallet-adapter-react";
 import { getAptosClient } from "@/lib/aptos";
-import {
-  TreasuryWriteError,
-  mapTreasuryWriteError,
-} from "@/lib/walletErrors";
+import { TreasuryWriteError, mapTreasuryWriteError } from "@/lib/walletErrors";
 
 /**
  * Canonical treasury write flow (mirrors CreateMessage.tsx):

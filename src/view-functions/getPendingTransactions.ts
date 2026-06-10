@@ -27,18 +27,26 @@ export const getPendingTransactions = async (
   multisigAddress: string,
 ): Promise<PendingMultisigTransaction[]> => {
   const client = getAptosClient();
+  // Pin every read in this function to a single ledger version. Without
+  // pinning, get_pending_transactions and last_resolved_sequence_number can
+  // hit replicas at different heights; that skew shifts every back-computed
+  // sequence number, making Approve/Reject vote on the wrong proposal.
+  const { ledger_version } = await client.getLedgerInfo();
+  const options = { ledgerVersion: Number(ledger_version) };
   const [pendingResponse, [lastResolved]] = await Promise.all([
     client.view({
       payload: {
         function: "0x1::multisig_account::get_pending_transactions",
         functionArguments: [multisigAddress],
       },
+      options,
     }) as Promise<unknown> as Promise<[RawMultisigTransaction[]]>,
     client.view<[string]>({
       payload: {
         function: "0x1::multisig_account::last_resolved_sequence_number",
         functionArguments: [multisigAddress],
       },
+      options,
     }),
   ]);
   const [rawTransactions] = pendingResponse;
@@ -53,6 +61,7 @@ export const getPendingTransactions = async (
           function: "0x1::multisig_account::can_be_executed",
           functionArguments: [multisigAddress, sequenceNumber.toString()],
         },
+        options,
       });
       const payloadHex = raw.payload.vec[0] ?? null;
       return {

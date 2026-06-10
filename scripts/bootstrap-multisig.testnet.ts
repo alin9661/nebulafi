@@ -73,6 +73,22 @@ async function main() {
     `seed treasury with ${formatApt(SEED_FUNDING)}`,
   );
 
+  // The generated owner can't approve anything without gas money.
+  if (generated) {
+    await submitAndWait(
+      aptos,
+      publisher,
+      {
+        function: "0x1::aptos_account::transfer",
+        functionArguments: [
+          generated.accountAddress.toString(),
+          SEED_FUNDING.toString(),
+        ],
+      },
+      `fund generated owner 2 with ${formatApt(SEED_FUNDING)} for gas`,
+    );
+  }
+
   console.log("\n── Bootstrap complete ──");
   console.log(`Multisig address: ${multisigAddress}`);
   console.log("\nAdd to .env:");

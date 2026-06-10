@@ -31,7 +31,7 @@ describe("mapTreasuryWriteError", () => {
     },
     {
       name: "threshold-not-met via hex abort code",
-      input: new Error(`${ABORT}: 0x307d9`),
+      input: new Error(`${ABORT}: 0x107d9`),
       expected: { kind: "threshold-not-met" },
     },
     {
@@ -47,6 +47,20 @@ describe("mapTreasuryWriteError", () => {
     {
       name: "payload-mismatch via decimal abort code",
       input: new Error(`${ABORT}: sub_status 2010`),
+      expected: { kind: "payload-mismatch" },
+    },
+    {
+      name: "threshold-not-met via prologue validation string (no multisig_account)",
+      input: new Error(
+        "Invalid transaction: Type: Validation Code: MULTISIG_TRANSACTION_INSUFFICIENT_APPROVALS",
+      ),
+      expected: { kind: "threshold-not-met" },
+    },
+    {
+      name: "payload-mismatch via prologue validation string (no multisig_account)",
+      input: new Error(
+        "Invalid transaction: Type: Validation Code: MULTISIG_TRANSACTION_PAYLOAD_DOES_NOT_MATCH",
+      ),
       expected: { kind: "payload-mismatch" },
     },
     {

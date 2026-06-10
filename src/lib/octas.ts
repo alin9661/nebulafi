@@ -5,7 +5,10 @@ export const formatApt = (octas: bigint): string => {
   const negative = octas < 0n;
   const abs = negative ? -octas : octas;
   const whole = abs / OCTAS_PER_APT;
-  const frac = (abs % OCTAS_PER_APT).toString().padStart(8, "0").replace(/0+$/, "");
+  const frac = (abs % OCTAS_PER_APT)
+    .toString()
+    .padStart(8, "0")
+    .replace(/0+$/, "");
   const wholeGrouped = whole.toLocaleString("en-US");
   return `${negative ? "−" : ""}${wholeGrouped}${frac ? `.${frac}` : ""}`;
 };

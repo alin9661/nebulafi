@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
+import { getAptosClient } from "@/lib/aptos";
 import { MULTISIG_ADDRESS, NETWORK } from "@/constants";
 import { useMultisigWrite } from "@/hooks/useMultisigWrite";
 import {
@@ -46,6 +47,47 @@ type NewProposalFields = {
   recipient: string;
   amountOctas: bigint;
 };
+
+/**
+ * Read the ACTUAL sequence number assigned to a freshly-created multisig
+ * proposal from the committed transaction's CreateTransactionEvent, instead
+ * of predicting it from possibly-stale cached reads. Returns null when no
+ * such event can be found (caller falls back to the prediction).
+ */
+async function readCreatedSequenceNumber(
+  transactionHash: string,
+): Promise<number | null> {
+  let response;
+  try {
+    response = await getAptosClient().getTransactionByHash({
+      transactionHash,
+    });
+  } catch {
+    // Lookup failure also falls back to the prediction — never lose the
+    // metadata over a flaky read of an already-committed transaction.
+    return null;
+  }
+  if (!("events" in response)) return null;
+  const createEvent = response.events.find(
+    (event) =>
+      // Event-v1 and event-v2 namings respectively.
+      event.type.endsWith("::multisig_account::CreateTransactionEvent") ||
+      event.type.endsWith("::multisig_account::CreateTransaction"),
+  );
+  if (!createEvent) return null;
+  const data: unknown = createEvent.data;
+  if (
+    typeof data !== "object" ||
+    data === null ||
+    !("sequence_number" in data)
+  ) {
+    return null;
+  }
+  const seqNo = Number(
+    (data as { sequence_number: string | number }).sequence_number,
+  );
+  return Number.isSafeInteger(seqNo) ? seqNo : null;
+}
 
 export function GovernanceLive() {
   if (!MULTISIG_ADDRESS) {
@@ -140,6 +182,7 @@ function GovernanceLiveBody({ multisigAddress }: { multisigAddress: string }) {
   const info = infoQuery.data;
   const pending = pendingQuery.data;
   const readsError = infoQuery.isError || pendingQuery.isError;
+  const explorerAccountUrl = `https://explorer.aptoslabs.com/account/${multisigAddress}?network=${NETWORK}`;
 
   const runAction = async (
     seq: bigint,
@@ -156,11 +199,6 @@ function GovernanceLiveBody({ multisigAddress }: { multisigAddress: string }) {
     fields: NewProposalFields,
   ): Promise<boolean> => {
     if (!info || !pending || isPending) return false;
-    // Predict the next sequence number from already-fetched reads. The race
-    // window (another owner proposing between this read and our submit) is
-    // acceptable for M1 — the metadata upsert is keyed to this predicted seq.
-    const predictedSeq =
-      info.lastResolvedSequenceNumber + 1n + BigInt(pending.length);
     clearError();
     setActiveSeq("new");
     const hash = await submit(
@@ -172,9 +210,17 @@ function GovernanceLiveBody({ multisigAddress }: { multisigAddress: string }) {
       {
         onSuccess: async (committedHash) => {
           try {
+            const seqNo =
+              (await readCreatedSequenceNumber(committedHash)) ??
+              // Fallback ONLY when no CreateTransaction event was found on
+              // the committed transaction (should not happen for a multisig
+              // create): predict from the possibly-stale cached reads.
+              Number(
+                info.lastResolvedSequenceNumber + 1n + BigInt(pending.length),
+              );
             await upsertProposalMetadataOnServer({
               multisigAddr: multisigAddress,
-              seqNo: Number(predictedSeq),
+              seqNo,
               title: fields.title,
               description: fields.description,
             });
@@ -284,6 +330,23 @@ function GovernanceLiveBody({ multisigAddress }: { multisigAddress: string }) {
               Showing pending on-chain transactions · resolved history lands
               with the indexer (M2)
             </p>
+            {metadataQuery.isError && (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-border px-4 py-3 text-sm text-muted-foreground">
+                <span>
+                  {
+                    "Proposal titles couldn't be loaded — showing on-chain data only."
+                  }
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="shrink-0"
+                  onClick={() => void metadataQuery.refetch()}
+                >
+                  Retry
+                </Button>
+              </div>
+            )}
             {info && pending ? (
               pending.length === 0 ? (
                 <div className="py-16 text-center text-muted-foreground text-sm">
@@ -299,6 +362,7 @@ function GovernanceLiveBody({ multisigAddress }: { multisigAddress: string }) {
                         key={seqStr}
                         txn={txn}
                         meta={metadataBySeq.get(Number(txn.sequenceNumber))}
+                        explorerAccountUrl={explorerAccountUrl}
                         threshold={info.numSignaturesRequired}
                         connected={connected}
                         isOwner={isOwner}
@@ -430,6 +494,7 @@ function InlineWriteError({
 function LiveProposalCard({
   txn,
   meta,
+  explorerAccountUrl,
   threshold,
   connected,
   isOwner,
@@ -442,6 +507,7 @@ function LiveProposalCard({
 }: {
   txn: PendingMultisigTransaction;
   meta: ProposalMetadataRow | undefined;
+  explorerAccountUrl: string;
   threshold: number;
   connected: boolean;
   isOwner: boolean;
@@ -506,9 +572,34 @@ function LiveProposalCard({
       <h3 className="font-display text-2xl font-medium tracking-[-0.01em] leading-[1.2] text-foreground mb-3">
         {title}
       </h3>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-6 flex-1">
+      <p className="text-sm text-muted-foreground leading-relaxed mb-4 flex-1">
         {description}
       </p>
+
+      {/* On-chain facts — ALWAYS rendered, regardless of off-chain metadata.
+          Owners must never vote on off-chain text alone. */}
+      <div className="rounded-md border border-border bg-muted/40 px-4 py-3 mb-6">
+        <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-1.5">
+          On-chain payload
+        </div>
+        {transfer ? (
+          <p className="font-mono tabular-nums text-sm text-foreground break-all">
+            {formatApt(transfer.amountOctas)} APT → {transfer.recipient}
+          </p>
+        ) : (
+          <p className="text-sm text-destructive">
+            Unrecognized payload — verify on the explorer before approving.
+          </p>
+        )}
+        <a
+          href={explorerAccountUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-block mt-1.5 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        >
+          View multisig account on explorer →
+        </a>
+      </div>
 
       {/* Approval bar */}
       <div className="space-y-2 mt-auto">

@@ -1,20 +1,22 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { ArrowDownLeft, ArrowUpRight, X } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Loader2, X } from "lucide-react";
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { AccountAddress } from "@aptos-labs/ts-sdk";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { DepositModal } from "@/components/modals/DepositModal";
-import { SendModal } from "@/components/modals/SendModal";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import { MULTISIG_ADDRESS, NETWORK } from "@/constants";
 import { formatApt, parseAptToOctas, shortAddr } from "@/lib/octas";
 import { useMultisigWrite } from "@/hooks/useMultisigWrite";
-import { TREASURY_ERROR_MESSAGES, type TreasuryWriteError } from "@/lib/walletErrors";
+import {
+  TREASURY_ERROR_MESSAGES,
+  type TreasuryWriteError,
+} from "@/lib/walletErrors";
 import { getMultisigBalance } from "@/view-functions/getMultisigBalance";
 import { getMultisigInfo, type MultisigInfo } from "@/view-functions/getOwners";
 import {
@@ -37,8 +39,15 @@ export function TreasuryLive() {
             Treasury not configured
           </h1>
           <p className="text-sm text-muted-foreground">
-            Set <span className="font-mono text-foreground">NEXT_PUBLIC_MULTISIG_ADDRESS</span> (
-            <span className="font-mono">bun run scripts/bootstrap-multisig.testnet.ts</span>)
+            Set{" "}
+            <span className="font-mono text-foreground">
+              NEXT_PUBLIC_MULTISIG_ADDRESS
+            </span>{" "}
+            (
+            <span className="font-mono">
+              bun run scripts/bootstrap-multisig.testnet.ts
+            </span>
+            )
           </p>
         </Card>
       </div>
@@ -51,13 +60,9 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
   const { toast } = useToast();
   const { connected } = useWallet();
   const { submit, isPending, error, clearError } = useMultisigWrite();
-  const [formError, setFormError] = useState<string | null>(null);
 
-  const [showDepositModal, setShowDepositModal] = useState(false);
-  const [depositFormData, setDepositFormData] = useState({ asset: "APT", amount: "" });
-
-  const [showSendModal, setShowSendModal] = useState(false);
-  const [sendFormData, setSendFormData] = useState({ recipient: "", asset: "APT", amount: "" });
+  const [showDepositDialog, setShowDepositDialog] = useState(false);
+  const [showSendDialog, setShowSendDialog] = useState(false);
 
   const balanceQuery = useQuery({
     queryKey: ["treasury", "balance", multisigAddress],
@@ -86,61 +91,48 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
   const info = infoQuery.data;
   const explorerAccountUrl = `https://explorer.aptoslabs.com/account/${multisigAddress}?network=${NETWORK}`;
 
-  const handleDepositSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
+  // M1 is APT-only — dialogs validate and parse amounts before calling these.
+  const handleDepositSubmit = async (amountOctas: bigint): Promise<boolean> => {
     clearError();
-    const amountOctas = parseAptToOctas(depositFormData.amount);
-    if (amountOctas === null) {
-      setShowDepositModal(false);
-      setFormError("Enter a valid APT amount");
-      return;
-    }
-    // The modal's asset select is cosmetic — M1 is APT-only.
-    const hash = await submit(depositToTreasury({ multisigAddress, amountOctas }), {
-      onSuccess: (txnHash) => {
-        toast({
-          title: "Deposit confirmed",
-          description: <TransactionOnExplorer hash={txnHash} />,
-        });
+    const hash = await submit(
+      depositToTreasury({ multisigAddress, amountOctas }),
+      {
+        onSuccess: (txnHash) => {
+          toast({
+            title: "Deposit confirmed",
+            description: <TransactionOnExplorer hash={txnHash} />,
+          });
+        },
       },
-    });
-    setShowDepositModal(false);
-    if (hash) setDepositFormData({ asset: "APT", amount: "" });
+    );
+    setShowDepositDialog(false);
+    return hash !== null;
   };
 
-  const handleSendSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormError(null);
+  const handleSendSubmit = async (
+    recipient: string,
+    amountOctas: bigint,
+  ): Promise<boolean> => {
     clearError();
-    const recipient = sendFormData.recipient.trim();
-    if (!isValidRecipient(recipient)) {
-      setShowSendModal(false);
-      setFormError("Invalid recipient address");
-      return;
-    }
-    const amountOctas = parseAptToOctas(sendFormData.amount);
-    if (amountOctas === null) {
-      setShowSendModal(false);
-      setFormError("Enter a valid APT amount");
-      return;
-    }
-    const hash = await submit(proposeTransfer({ multisigAddress, recipient, amountOctas }), {
-      onSuccess: (txnHash) => {
-        toast({
-          title: info
-            ? `Transfer proposed — needs ${info.numSignaturesRequired} approvals`
-            : "Transfer proposed — awaiting owner approvals",
-          description: <TransactionOnExplorer hash={txnHash} />,
-        });
+    const hash = await submit(
+      proposeTransfer({ multisigAddress, recipient, amountOctas }),
+      {
+        onSuccess: (txnHash) => {
+          toast({
+            title: info
+              ? `Transfer proposed — needs ${info.numSignaturesRequired} approvals`
+              : "Transfer proposed — awaiting owner approvals",
+            description: <TransactionOnExplorer hash={txnHash} />,
+          });
+        },
       },
-    });
-    setShowSendModal(false);
-    if (hash) setSendFormData({ recipient: "", asset: "APT", amount: "" });
+    );
+    setShowSendDialog(false);
+    return hash !== null;
   };
 
   const inlineError =
-    formError ?? (error && error.kind !== "user-rejected" ? writeErrorMessage(error) : null);
+    error && error.kind !== "user-rejected" ? writeErrorMessage(error) : null;
 
   return (
     <div className="space-y-12 px-6 py-12 max-w-[1280px] mx-auto">
@@ -148,14 +140,18 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
       <header className="flex flex-col gap-6 pb-8 border-b border-border md:flex-row md:items-end md:justify-between">
         <div className="flex-1">
           <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-2">
-            Dashboard · <span className="font-mono text-foreground">TESTNET</span>
+            Dashboard ·{" "}
+            <span className="font-mono text-foreground">TESTNET</span>
           </div>
           <h1 className="font-display text-5xl md:text-6xl font-medium tracking-[-0.02em] leading-[1.05] mb-3 text-foreground">
             Treasury Overview
           </h1>
           <p className="text-sm text-muted-foreground">
             NYU Blockchain Lab · Live from Aptos testnet · multisig{" "}
-            <span className="font-mono text-foreground tabular-nums">{shortAddr(multisigAddress)}</span> · seq{" "}
+            <span className="font-mono text-foreground tabular-nums">
+              {shortAddr(multisigAddress)}
+            </span>{" "}
+            · seq{" "}
             <span className="font-mono text-foreground tabular-nums">
               #{info ? info.lastResolvedSequenceNumber.toString() : "—"}
             </span>{" "}
@@ -166,7 +162,7 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={() => setShowSendModal(true)}
+              onClick={() => setShowSendDialog(true)}
               disabled={!connected || isPending}
               className="gap-2"
             >
@@ -174,7 +170,7 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
               Send
             </Button>
             <Button
-              onClick={() => setShowDepositModal(true)}
+              onClick={() => setShowDepositDialog(true)}
               disabled={!connected || isPending}
               className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover"
             >
@@ -183,7 +179,9 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
             </Button>
           </div>
           {!connected && (
-            <p className="text-xs text-muted-foreground">Connect wallet to deposit or send.</p>
+            <p className="text-xs text-muted-foreground">
+              Connect wallet to deposit or send.
+            </p>
           )}
         </div>
       </header>
@@ -198,10 +196,7 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
           <button
             type="button"
             aria-label="Dismiss error"
-            onClick={() => {
-              setFormError(null);
-              clearError();
-            }}
+            onClick={clearError}
             className="shrink-0 text-destructive hover:opacity-70"
           >
             <X className="w-4 h-4" />
@@ -226,7 +221,9 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
         <KpiCard
           label="Multisig Threshold"
           query={infoQuery}
-          render={(i: MultisigInfo) => `${i.numSignaturesRequired} / ${i.owners.length}`}
+          render={(i: MultisigInfo) =>
+            `${i.numSignaturesRequired} / ${i.owners.length}`
+          }
           meta="Quorum requirement"
         />
         <KpiCard
@@ -279,13 +276,17 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
                       <span className="inline-flex items-center gap-2">
                         <span className="inline-block w-2 h-2 rounded-sm bg-info" />
                         APT
-                        <span className="text-xs text-muted-foreground font-normal ml-1">Aptos</span>
+                        <span className="text-xs text-muted-foreground font-normal ml-1">
+                          Aptos
+                        </span>
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right font-mono tabular-nums text-foreground">
                       {formatApt(balanceQuery.data)}
                     </td>
-                    <td className="px-6 py-4 text-right text-muted-foreground">Aptos Testnet</td>
+                    <td className="px-6 py-4 text-right text-muted-foreground">
+                      Aptos Testnet
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -333,23 +334,284 @@ function TreasuryLiveBody({ multisigAddress }: { multisigAddress: string }) {
         </Card>
       </section>
 
-      <DepositModal
-        isOpen={showDepositModal}
-        onClose={() => setShowDepositModal(false)}
-        formData={depositFormData}
-        onFormChange={setDepositFormData}
+      <DepositDialog
+        open={showDepositDialog}
+        onClose={() => setShowDepositDialog(false)}
+        multisigAddress={multisigAddress}
+        isPending={isPending}
         onSubmit={handleDepositSubmit}
       />
 
-      <SendModal
-        isOpen={showSendModal}
-        onClose={() => setShowSendModal(false)}
-        formData={sendFormData}
-        onFormChange={setSendFormData}
+      <SendDialog
+        open={showSendDialog}
+        onClose={() => setShowSendDialog(false)}
+        info={info ?? null}
+        isPending={isPending}
         onSubmit={handleSendSubmit}
       />
     </div>
   );
+}
+
+/**
+ * Local light-mode dialogs (mirroring GovernanceLive's NewProposalDialog) for
+ * the REAL treasury writes — the legacy dark-glass DepositModal/SendModal
+ * remain mock-page-only.
+ */
+function DepositDialog({
+  open,
+  onClose,
+  multisigAddress,
+  isPending,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  multisigAddress: string;
+  isPending: boolean;
+  onSubmit: (amountOctas: bigint) => Promise<boolean>;
+}) {
+  const [amount, setAmount] = useState("");
+  const [touched, setTouched] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  if (!open) return null;
+
+  const amountOctas = parseAptToOctas(amount);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (amountOctas === null || isPending) return;
+    const ok = await onSubmit(amountOctas);
+    if (ok) {
+      setAmount("");
+      setTouched(false);
+    }
+  };
+
+  const copyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(multisigAddress);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // Clipboard unavailable — the address below is select-all on click.
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Deposit to treasury"
+    >
+      <Card className="w-full max-w-md border-border bg-card p-6">
+        <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-1">
+          Treasury
+        </div>
+        <h2 className="font-display text-2xl font-medium tracking-[-0.01em] text-foreground mb-5">
+          Deposit
+        </h2>
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          <div>
+            <div className="text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-1.5">
+              Treasury address
+            </div>
+            <div className="flex items-start justify-between gap-3 rounded-md border border-border bg-muted/40 px-3 py-2.5">
+              <span className="font-mono text-xs text-foreground break-all select-all">
+                {multisigAddress}
+              </span>
+              <button
+                type="button"
+                onClick={() => void copyAddress()}
+                className="shrink-0 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+              >
+                {copied ? "Copied" : "Copy"}
+              </button>
+            </div>
+          </div>
+          <div>
+            <FieldLabel htmlFor="deposit-amount">Amount (APT)</FieldLabel>
+            <Input
+              id="deposit-amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.05"
+              inputMode="decimal"
+              className="font-mono tabular-nums"
+              disabled={isPending}
+            />
+            {touched && amountOctas === null && (
+              <FieldError>
+                Enter a positive APT amount (up to 8 decimals).
+              </FieldError>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover"
+            >
+              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Deposit
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+function SendDialog({
+  open,
+  onClose,
+  info,
+  isPending,
+  onSubmit,
+}: {
+  open: boolean;
+  onClose: () => void;
+  info: MultisigInfo | null;
+  isPending: boolean;
+  onSubmit: (recipient: string, amountOctas: bigint) => Promise<boolean>;
+}) {
+  const [recipient, setRecipient] = useState("");
+  const [amount, setAmount] = useState("");
+  const [touched, setTouched] = useState(false);
+
+  if (!open) return null;
+
+  const recipientValid = isValidRecipient(recipient.trim());
+  const amountOctas = parseAptToOctas(amount);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!recipientValid || amountOctas === null || isPending) return;
+    const ok = await onSubmit(
+      AccountAddress.from(recipient.trim()).toString(),
+      amountOctas,
+    );
+    if (ok) {
+      setRecipient("");
+      setAmount("");
+      setTouched(false);
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Propose transfer"
+    >
+      <Card className="w-full max-w-md border-border bg-card p-6">
+        <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground mb-1">
+          Treasury
+        </div>
+        <h2 className="font-display text-2xl font-medium tracking-[-0.01em] text-foreground mb-5">
+          Propose Transfer
+        </h2>
+        <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+          <div>
+            <FieldLabel htmlFor="send-recipient">Recipient</FieldLabel>
+            <Input
+              id="send-recipient"
+              value={recipient}
+              onChange={(e) => setRecipient(e.target.value)}
+              placeholder="0x…"
+              className="font-mono"
+              disabled={isPending}
+            />
+            {touched && !recipientValid && (
+              <FieldError>Enter a valid Aptos address.</FieldError>
+            )}
+          </div>
+          <div>
+            <FieldLabel htmlFor="send-amount">Amount (APT)</FieldLabel>
+            <Input
+              id="send-amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="0.05"
+              inputMode="decimal"
+              className="font-mono tabular-nums"
+              disabled={isPending}
+            />
+            {touched && amountOctas === null && (
+              <FieldError>
+                Enter a positive APT amount (up to 8 decimals).
+              </FieldError>
+            )}
+          </div>
+          {info && (
+            <div className="rounded-md border border-border px-3 py-2.5 text-xs text-muted-foreground">
+              Requires{" "}
+              <span className="font-mono tabular-nums text-foreground">
+                {info.numSignaturesRequired}
+              </span>{" "}
+              of{" "}
+              <span className="font-mono tabular-nums text-foreground">
+                {info.owners.length}
+              </span>{" "}
+              approvals before execution.
+            </div>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="gap-2 bg-primary text-primary-foreground hover:bg-primary-hover"
+            >
+              {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+              Propose transfer
+            </Button>
+          </div>
+        </form>
+      </Card>
+    </div>
+  );
+}
+
+function FieldLabel({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="block text-[11px] font-medium uppercase tracking-[0.1em] text-muted-foreground mb-1.5"
+    >
+      {children}
+    </label>
+  );
+}
+
+function FieldError({ children }: { children: React.ReactNode }) {
+  return <p className="text-xs text-destructive mt-1.5">{children}</p>;
 }
 
 function isValidRecipient(addr: string): boolean {
@@ -408,7 +670,10 @@ function SectionSkeleton({ rows }: { rows: number }) {
   return (
     <div className="px-6 py-6 space-y-3">
       {Array.from({ length: rows }, (_, i) => (
-        <div key={i} className="h-10 animate-pulse rounded-sm border border-border bg-muted" />
+        <div
+          key={i}
+          className="h-10 animate-pulse rounded-sm border border-border bg-muted"
+        />
       ))}
     </div>
   );
@@ -435,7 +700,9 @@ function PendingRow({
   explorerAccountUrl: string;
 }) {
   const transfer =
-    tx.decoded && tx.decoded.recipient !== null && tx.decoded.amountOctas !== null
+    tx.decoded &&
+    tx.decoded.recipient !== null &&
+    tx.decoded.amountOctas !== null
       ? { recipient: tx.decoded.recipient, amountOctas: tx.decoded.amountOctas }
       : null;
   return (
@@ -451,7 +718,10 @@ function PendingRow({
               <span className="font-mono tabular-nums font-medium">
                 {formatApt(transfer.amountOctas)} APT
               </span>{" "}
-              → <span className="font-mono text-muted-foreground">{shortAddr(transfer.recipient)}</span>
+              →{" "}
+              <span className="font-mono text-muted-foreground">
+                {shortAddr(transfer.recipient)}
+              </span>
             </>
           ) : (
             <>
@@ -502,7 +772,7 @@ function ApprovalPill({
           : "border-warning/25 bg-warning-tint text-warning",
       )}
     >
-      {ready && <>Ready · </>}
+      {ready ? "Ready" : "Awaiting"} ·{" "}
       <span className="font-mono tabular-nums">{count}</span>
     </span>
   );

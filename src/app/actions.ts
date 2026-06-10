@@ -1,6 +1,7 @@
 "use server";
 
 import { getLastSuccessVersion } from "@/db/getLastSuccessVersion";
+import { getAptosClient } from "@/lib/aptos";
 import { GetMessageProps, getMessage } from "@/db/getMessage";
 import { GetMessagesProps, getMessages } from "@/db/getMessages";
 import {
@@ -39,6 +40,19 @@ export const getLastVersionOnServer = async (): Promise<number> => {
 export const upsertProposalMetadataOnServer = async (
   props: UpsertProposalMetadataProps,
 ): Promise<void> => {
+  // Cheap server-side chain validation: only accept seq numbers that
+  // plausibly refer to a real proposal on this multisig
+  // (1 <= seqNo < next_sequence_number). Signature-based authorization
+  // (proving the caller is an owner) lands with the M3 threat model.
+  const [nextSeq] = await getAptosClient().view<[string]>({
+    payload: {
+      function: "0x1::multisig_account::next_sequence_number",
+      functionArguments: [props.multisigAddr],
+    },
+  });
+  if (props.seqNo < 1 || props.seqNo >= Number(nextSeq)) {
+    throw new Error("seq_no does not correspond to an on-chain proposal");
+  }
   return upsertProposalMetadata(props);
 };
 
